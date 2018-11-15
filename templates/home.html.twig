@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}DashboardCreator{% endblock %}</title>
+    {% block stylesheets %}
+        <link rel="stylesheet" type="text/css" href="css/home.css">
+    {% endblock %}
+</head>
+<body>
+{% block body %}
+
+    <div>
+        <h2>Current Datasets</h2>
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+    <script src='https://d3js.org/d3.v4.min.js'></script>
+{% endblock %}
+</body>
+</html>

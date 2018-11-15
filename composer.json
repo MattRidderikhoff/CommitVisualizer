@@ -8,7 +8,9 @@
         "symfony/console": "4.1.*",
         "symfony/flex": "^1.1",
         "symfony/framework-bundle": "4.1.*",
-        "symfony/yaml": "4.1.*"
+        "symfony/twig-bundle": "4.1.*",
+        "symfony/yaml": "4.1.*",
+        "twig/twig": "^2.0"
     },
     "require-dev": {
         "symfony/dotenv": "4.1.*",
