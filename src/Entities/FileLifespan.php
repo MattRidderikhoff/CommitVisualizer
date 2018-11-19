@@ -19,42 +19,71 @@ class FileLifespan
     {
         $this->file_name = $file['filename'];
         $this->file_size = $file['additions'];
-        $this->getFunctions($file['patch']);
+        $this->addFile($file['patch']);
     }
 
-    private function getFunctions($patch) {
-        $lines_string = explode('@@', $patch)[2];
-        $lines = explode('+', $lines_string);
-        $removed = array_shift($lines); // remove blank entry created by explode()
+    private function addFile($patch) {
+        $lines = explode("\n", $patch);
 
-        $current_line = 0;
-        while (count($lines) > 0) {
-            $current_line = array_shift($lines);
-            $current_line++;
+        $current_line_num = 0;
+        $current_line_num++; // 1st entry isn't a line in the file, it's the diff stats
 
+        while ($current_line_num < count($lines)) {
+            $current_line = $lines[$current_line_num];
+
+            // create function object with line count and name, AND save it. return the new current_line_num
             if (strpos($current_line,' function ') !== false) {
-                $function_start_line = null;
-                $function_end_line = null;
-                $function_name = null;
+                $current_line_num = $this->generateFunction($lines, $current_line_num);
+            }
 
+            $current_line_num++;
+        }
+    }
 
-                // get function name from start line
-                $function_name = $current_line;
+    private function generateFunction($lines, $current_index) {
+        $current_line = $lines[$current_index];
 
-                // now make sure we can find the end of the function, which is where we have a matching "}" for our starting "{"
-                if (strpos($current_line, '{') !== false) {
-                    $function_start_line = $current_line;
-                }
-                
-                // iterate through the remaining lines
-                while (!isset($function_end_line)) {
-                    $left_brace_count = (isset($function_start_line)) ? 1 : 0;
-                }
+        $function['name'] = $this->getFunctionName($current_line);
+        $function['start_line'] = $current_index;
 
-                // wait until we get to the end of the function
+        $left_brace_count = 0;
+        if (strpos($current_line, '{')) {
 
-
+            if (strpos($current_line, '}')) {
+                $function['end_line'] = $current_line; // 1 line function
+            } else {
+                $left_brace_count++;
             }
         }
+
+        $function_end_line = null;
+        while (!isset($function['end_line'])) {
+            $current_index++;
+            $current_line = $lines[$current_index];
+
+            if (strpos($current_line, '{')) {
+                $left_brace_count++;
+            }
+
+            if (strpos($current_line, '}')) {
+
+                if ($left_brace_count == 1) {
+                    $function['end_line'] = $current_index;
+                } else {
+                    $left_brace_count--;
+                }
+            }
+        }
+
+        $this->functions[] = $function;
+
+        return $current_index;
+    }
+
+    private function getFunctionName($line) {
+        $function_sub_line = explode('function ', $line);
+        $function_sub_line = explode('(', $function_sub_line[1]);
+
+        return array_shift($function_sub_line);
     }
 }

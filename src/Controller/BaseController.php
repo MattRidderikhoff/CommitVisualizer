@@ -27,7 +27,9 @@ class BaseController extends AbstractController
     public function renderHome(SerializerInterface $serializer) {
 
         $this->serializer = $serializer;
-        $this->client = new Client(['base_uri' => self::OUR_PROJECT_URI, 'defaults' => ['header' => ['Authorization' => 'Bearer '.'591f9410b8e503445b4d54fe008255a043c13b69']]]);
+//        $this->client = new Client(['base_uri' => self::OUR_PROJECT_URI, 'defaults' => ['header' => ['Authorization' => 'Bearer '.'591f9410b8e503445b4d54fe008255a043c13b69']]]);
+
+        $this->client = new Client(['base_uri' => self::OUR_PROJECT_URI, 'defaults' => ['auth' => ['MattRidderikhoff', '591f9410b8e503445b4d54fe008255a043c13b69'],]]);
         $this->commit_history = new CommitHistory();
 
         $this->generateCommitHistory($serializer);
@@ -38,7 +40,7 @@ class BaseController extends AbstractController
 
     private function generateCommitHistory() {
 
-        $response = $this->client->request('GET', 'commits');
+        $response = $this->client->request('GET', 'commits', ['auth' => ['MattRidderikhoff', '591f9410b8e503445b4d54fe008255a043c13b69']]);
         $response_contents = $response->getBody()->getContents();
 
         $commits = $this->serializer->decode($response_contents, 'json');
@@ -51,7 +53,7 @@ class BaseController extends AbstractController
     private function parseCommit($commit) {
         $commit_sha = $commit['sha'];
 
-        $response = $this->client->request('GET', 'commits/'.$commit_sha);
+        $response = $this->client->request('GET', 'commits/'.$commit_sha, ['auth' => ['MattRidderikhoff', '591f9410b8e503445b4d54fe008255a043c13b69']]);
         $response_contents = $response->getBody()->getContents();
         $commit_info = $this->serializer->decode($response_contents, 'json');
 
