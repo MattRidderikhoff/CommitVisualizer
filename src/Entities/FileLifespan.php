@@ -33,7 +33,10 @@ class FileLifespan
 
             // create function object with line count and name, AND save it. return the new current_line_num
             if (strpos($current_line,' function ') !== false) {
-                $current_line_num = $this->generateFunction($lines, $current_line_num);
+
+                if (strpos($current_line, ';') === false) { // todo: ignoring abstract/unimplemented functions for now
+                    $current_line_num = $this->generateFunction($lines, $current_line_num);
+                }
             }
 
             $current_line_num++;
@@ -43,13 +46,13 @@ class FileLifespan
     private function generateFunction($lines, $current_index) {
         $current_line = $lines[$current_index];
 
-        $function = new FunctionLifespan($this->getFunctionName($current_line), $current_index, null);
+        $function = new FunctionLifespan($this->generateFunctionName($current_line), $current_index);
 
         $left_brace_count = 0;
         if (strpos($current_line, '{') !== false) {
 
             if (strpos($current_line, '}') !== false) {
-                $function['end_line'] = $current_line; // 1 line function
+                $function->setEndLine($current_line); // 1 line function
             } else {
                 $left_brace_count++;
             }
@@ -74,16 +77,20 @@ class FileLifespan
             }
         }
 
-        $function->end_line = $function_end_line;
+        $function->setEndLine($function_end_line);
         $this->functions[] = $function;
 
         return $current_index;
     }
 
-    private function getFunctionName($line) {
+    private function generateFunctionName($line) {
         $function_sub_line = explode('function ', $line);
         $function_sub_line = explode('(', $function_sub_line[1]);
 
         return array_shift($function_sub_line);
+    }
+
+    public function getName() {
+        return $this->file_name;
     }
 }

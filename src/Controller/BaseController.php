@@ -10,10 +10,9 @@ namespace App\Controller;
 
 use App\Entities\CommitHistory;
 use App\Entities\FileLifespan;
+use App\Entities\RepoOverview;
 use App\Services\APIService;
-use function GuzzleHttp\Psr7\parse_header;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 
 class BaseController extends AbstractController
@@ -21,9 +20,9 @@ class BaseController extends AbstractController
     private $serializer;
     private $api_service;
 
-    private $client;
     private $commit_history;
     private $repo_uri;
+    private $repo;
 
     private $files = [];
 
@@ -43,6 +42,7 @@ class BaseController extends AbstractController
 
         $this->repo_uri = self::GITHUB_API_URI . self::OUR_PROJECT_URI;
         $this->commit_history = new CommitHistory();
+        $this->repo = new RepoOverview();
 
         $this->generateCommitHistory();
 
@@ -51,8 +51,8 @@ class BaseController extends AbstractController
 
     private function generateCommitHistory()
     {
-//        $all_commit_info = $this->api_service->getAllCommitInfo($this->repo_uri);
-        $all_commit_info = $this->getAllCommitInfoSaved();
+//        $all_commit_info = $this->api_service->getAllCommitInfo($this->repo_uri);  // online version
+        $all_commit_info = $this->getAllCommitInfoSaved(); // offline version
 
         foreach ($all_commit_info as $commit) {
             $this->parseCommit($commit);
@@ -69,13 +69,19 @@ class BaseController extends AbstractController
         $file_stats = $commit_info['files'];
 
         foreach ($commit_info['files'] as $file) {
+            $file_name = $file['filename'];
 
             // only track PHP files
-            if (strpos($file['filename'], '.php') !== false) {
+            if (strpos($file_name, '.php') !== false && strpos($file_name, 'vendor') === false) { // 2nd condition is ignoring certain files from our old project`x
 
                 if ($file['status'] == 'added') {
-                    $file_lifespan = new FileLifespan($file);
-                    $this->files[] = $file_lifespan;
+
+                    if (!$this->repo->hasFile($file_name)) {
+
+                        $file_lifespan = new FileLifespan($file);
+                        $this->files[] = $file_lifespan;
+                    }
+
                 } else {
 
                 }
