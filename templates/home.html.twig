@@ -12,12 +12,40 @@
 
     <div>
         <h2>Current Datasets</h2>
+        <ul> </ul>
+
+        <svg width='200' height='500'></svg>
     </div>
 
 {% endblock %}
 
 {% block javascripts %}
     <script src='https://d3js.org/d3.v4.min.js'></script>
+
+    <script>
+        var fruits = ['apple', 'mango', 'banana', 'orange'];
+        d3.select('ul')
+            .selectAll('li')
+            .data(fruits)
+            .enter()
+            .append('li')
+            .text(function(d) { return d; });
+
+        var data = [80, 120, 60, 150, 200];
+
+        var barHeight = 20;
+
+        var bar = d3.select('svg')
+            .selectAll('rect')
+            .data(data)
+            .enter()
+            .append('rect')
+            .attr('width', function(d) {  return d; })
+            .attr('height', barHeight - 1)
+            .attr('transform', function(d, i) {
+                return "translate(0," + i * barHeight + ")";
+            });
+    </script>
 {% endblock %}
 </body>
 </html>
