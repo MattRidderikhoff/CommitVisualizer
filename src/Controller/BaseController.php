@@ -10,7 +10,7 @@ namespace App\Controller;
 
 use App\Entities\CommitHistory;
 use App\Entities\FileLifespan;
-use GuzzleHttp\Client;
+use App\Services\APIService;
 use function GuzzleHttp\Psr7\parse_header;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Serializer\Serializer;
@@ -19,6 +19,8 @@ use Symfony\Component\Serializer\SerializerInterface;
 class BaseController extends AbstractController
 {
     private $serializer;
+    private $api_service;
+
     private $client;
     private $commit_history;
     private $repo_uri;
@@ -33,49 +35,34 @@ class BaseController extends AbstractController
 
     const AUTH_ARRAY = ['headers' => ['Authorization' => 'token c368b842e3e756e573997c2f79c38e6c5a3dbc4d']];
 
-    public function renderHome(SerializerInterface $serializer) {
+    public function renderHome(APIService $api_service, SerializerInterface $serializer)
+    {
 
         $this->serializer = $serializer;
-//        $this->client = new Client(['base_uri' => self::OUR_PROJECT_URI, 'defaults' => ['header' => ['Authorization' => 'Bearer '.'591f9410b8e503445b4d54fe008255a043c13b69']]]);
+        $this->api_service = $api_service;
 
-        $this->repo_uri = self::GITHUB_API_URI.self::OUR_PROJECT_URI;
-        $this->client = new Client();
+        $this->repo_uri = self::GITHUB_API_URI . self::OUR_PROJECT_URI;
         $this->commit_history = new CommitHistory();
 
-        $this->generateCommitHistory($serializer);
+        $this->generateCommitHistory();
 
         return $this->render('home.html.twig', []);
     }
 
-    private function generateCommitHistory() {
+    private function generateCommitHistory()
+    {
+//        $all_commit_info = $this->api_service->getAllCommitInfo($this->repo_uri);
+        $all_commit_info = $this->getAllCommitInfoSaved();
 
-        $response = $this->client->request('GET', $this->repo_uri.'commits', self::AUTH_ARRAY);
-        $response_contents = $response->getBody()->getContents();
-        $commits = $this->serializer->decode($response_contents, 'json');
-        $link_header = parse_header($response->getHeader('Link'));
-
-        while ($this->moreLinks($link_header)) {
-
-            $response = $this->client->request('GET', $this->nextLink($link_header), self::AUTH_ARRAY);
-            $response_contents = $response->getBody()->getContents();
-            $next_commits = $this->serializer->decode($response_contents, 'json');
-
-            $commits = array_merge($commits, $next_commits);
-            $link_header = parse_header($response->getHeader('Link'));
-        }
-        
-        foreach ($commits as $commit) {
+        foreach ($all_commit_info as $commit) {
             $this->parseCommit($commit);
         }
-
     }
 
-    private function parseCommit($commit) {
-        $commit_sha = $commit['sha'];
-
-        $response = $this->client->request('GET', $this->repo_uri.'commits/'.$commit_sha, self::AUTH_ARRAY);
-        $response_contents = $response->getBody()->getContents();
-        $commit_info = $this->serializer->decode($response_contents, 'json');
+    private function parseCommit($commit_all)
+    {
+        $commit = $commit_all['commit'];
+        $commit_info = $commit_all['commit_info'];
 
         // contains high-level about additions and deletions
         $stats = $commit_info['stats'];
@@ -96,28 +83,8 @@ class BaseController extends AbstractController
         }
     }
 
-    private function moreLinks($link_header) {
-        $more_links = false;
-
-        foreach ($link_header as $link) {
-            if ($link['rel'] == 'next') {
-                $more_links = true;
-            }
-        }
-
-        return $more_links;
-    }
-
-    private function nextLink($link_header) {
-        foreach ($link_header as $link) {
-            if ($link['rel'] == 'next') {
-                $link_uri = $link[0];
-                $link_uri = str_replace('<', '', $link_uri);
-                $link_uri = str_replace('>', '', $link_uri);
-                return $link_uri;
-            }
-        }
-
-        return null;
+    private function getAllCommitInfoSaved() {
+        $results = file_get_contents('commits.json');
+        return $this->serializer->decode($results, 'json');
     }
 }
