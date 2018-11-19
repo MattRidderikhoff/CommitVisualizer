@@ -43,8 +43,7 @@ class FileLifespan
     private function generateFunction($lines, $current_index) {
         $current_line = $lines[$current_index];
 
-        $function['name'] = $this->getFunctionName($current_line);
-        $function['start_line'] = $current_index;
+        $function = new FunctionLifespan($this->getFunctionName($current_line), $current_index, null);
 
         $left_brace_count = 0;
         if (strpos($current_line, '{')) {
@@ -75,6 +74,7 @@ class FileLifespan
             }
         }
 
+        $function->end_line = $function_end_line;
         $this->functions[] = $function;
 
         return $current_index;
