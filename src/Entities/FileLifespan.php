@@ -46,9 +46,9 @@ class FileLifespan
         $function = new FunctionLifespan($this->getFunctionName($current_line), $current_index, null);
 
         $left_brace_count = 0;
-        if (strpos($current_line, '{')) {
+        if (strpos($current_line, '{') !== false) {
 
-            if (strpos($current_line, '}')) {
+            if (strpos($current_line, '}') !== false) {
                 $function['end_line'] = $current_line; // 1 line function
             } else {
                 $left_brace_count++;
@@ -56,18 +56,18 @@ class FileLifespan
         }
 
         $function_end_line = null;
-        while (!isset($function['end_line'])) {
+        while (!isset($function->end_line)) {
             $current_index++;
             $current_line = $lines[$current_index];
 
-            if (strpos($current_line, '{')) {
+            if (strpos($current_line, '{') !== false) {
                 $left_brace_count++;
             }
 
-            if (strpos($current_line, '}')) {
+            if (strpos($current_line, '}') !== false) {
 
                 if ($left_brace_count == 1) {
-                    $function['end_line'] = $current_index;
+                    $function->end_line = $current_index;
                 } else {
                     $left_brace_count--;
                 }
