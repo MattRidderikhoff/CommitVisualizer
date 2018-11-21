@@ -14,12 +14,14 @@ class FileLifespan
     private $functions = [];
     private $file_name;
     private $file_size;
+    private $creation_date;
 
-    public function __construct($file)
+    public function __construct($file, $commit_date)
     {
         $this->file_name = $file['filename'];
         $this->file_size = $file['additions'];
-        $this->addFile($file['patch']);
+        $this->creation_date = $commit_date;
+        $this->addFile($file['patch'], $commit_date);
     }
 
     public function modify($file) {
@@ -30,7 +32,7 @@ class FileLifespan
 
     }
 
-    private function addFile($patch) {
+    private function addFile($patch, $commit_date) {
         $lines = explode("\n", $patch);
 
         $current_line_num = 0;
@@ -43,7 +45,7 @@ class FileLifespan
             if (strpos($current_line,' function ') !== false) {
 
                 if (strpos($current_line, ';') === false) { // todo: ignoring abstract/unimplemented functions for now
-                    $current_line_num = $this->generateFunction($lines, $current_line_num);
+                    $current_line_num = $this->generateFunction($lines, $current_line_num, $commit_date);
                 }
             }
 
@@ -51,22 +53,22 @@ class FileLifespan
         }
     }
 
-    private function generateFunction($lines, $current_index) {
+    private function generateFunction($lines, $current_index, $commit_date) {
         $current_line = $lines[$current_index];
 
-        $function = new FunctionLifespan($this->generateFunctionName($current_line), $current_index);
+        $function_commit = new FunctionState($this->generateFunctionName($current_line), $commit_date, $current_index);
 
         $left_brace_count = 0;
         if (strpos($current_line, '{') !== false) {
 
             if (strpos($current_line, '}') !== false) {
-                $function->setEndLine($current_line); // 1 line function
+                $function_commit->setEndLine($current_line); // 1 line function
             } else {
                 $left_brace_count++;
             }
         }
 
-        while (!$function->hasEndLine()) {
+        while (!$function_commit->hasEndLine()) {
             $current_index++;
             $current_line = $lines[$current_index];
 
@@ -77,14 +79,14 @@ class FileLifespan
             if (strpos($current_line, '}') !== false) {
 
                 if ($left_brace_count == 1) {
-                    $function->setEndLine($current_index);
+                    $function_commit->setEndLine($current_index);
                 } else {
                     $left_brace_count--;
                 }
             }
         }
 
-        $this->functions[] = $function;
+        $this->functions[] = new FunctionLifespan($function_commit);
 
         return $current_index;
     }

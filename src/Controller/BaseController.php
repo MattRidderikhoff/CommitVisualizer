@@ -48,7 +48,7 @@ class BaseController extends AbstractController
 //        $all_commit_info = $this->api_service->getAllCommitInfo($this->repo_uri);  // online version
         $all_commit_info = $this->getAllCommitInfoSaved(); // offline version
 
-        // order commits by date (earliest -> lastest)
+        // order commits chronologically
         usort($all_commit_info,
             function($a, $b) {
                 $a_info = $a['commit_info']['commit']['committer']['date'];
@@ -69,12 +69,10 @@ class BaseController extends AbstractController
 
     private function parseCommit($commit_all)
     {
-        $commit = $commit_all['commit'];
+//        $commit = $commit_all['commit'];
         $commit_info = $commit_all['commit_info'];
-
-        // contains high-level about additions and deletions
-        $stats = $commit_info['stats'];
-        $file_stats = $commit_info['files'];
+        $commit_date_raw = $commit_all['commit_info']['commit']['committer']['date'];
+        $commit_date = new \DateTime($commit_date_raw);
 
         foreach ($commit_info['files'] as $file) {
             $file_name = $file['filename'];
@@ -83,7 +81,7 @@ class BaseController extends AbstractController
             if (strpos($file_name, '.php') !== false) {
 
                 if (strpos($file_name, 'vendor') === false &&
-                   (strpos($file_name, 'src/') !== false)) { // 2nd condition is ignoring certain files from our old project`x
+                   (strpos($file_name, 'src/') !== false)) { // only include user-generated files from DashboardCreator
 
                     if ($file['status'] == 'added') {
 
@@ -92,7 +90,7 @@ class BaseController extends AbstractController
                             if ($file_name == 'src/Controller/BaseController.php') {
                                 $i = 1;
                             }
-                            $file_lifespan = new FileLifespan($file);
+                            $file_lifespan = new FileLifespan($file, $commit_date);
                             $this->repo->addFile($file_lifespan);
                         }
 
