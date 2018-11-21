@@ -25,4 +25,8 @@ class FunctionLifespan
     public function setEndLine($end_line) {
         $this->end_line = $end_line;
     }
+
+    public function hasEndLine() {
+        return isset($this->end_line);
+    }
 }

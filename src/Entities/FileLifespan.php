@@ -22,6 +22,14 @@ class FileLifespan
         $this->addFile($file['patch']);
     }
 
+    public function modify($file) {
+        $lines = explode("\n", $file['patch']);
+
+        $additions = $file['additions'];
+        $deletions = $file['deletions'];
+
+    }
+
     private function addFile($patch) {
         $lines = explode("\n", $patch);
 
@@ -58,8 +66,7 @@ class FileLifespan
             }
         }
 
-        $function_end_line = null;
-        while (!isset($function->end_line)) {
+        while (!$function->hasEndLine()) {
             $current_index++;
             $current_line = $lines[$current_index];
 
@@ -70,14 +77,13 @@ class FileLifespan
             if (strpos($current_line, '}') !== false) {
 
                 if ($left_brace_count == 1) {
-                    $function->end_line = $current_index;
+                    $function->setEndLine($current_index);
                 } else {
                     $left_brace_count--;
                 }
             }
         }
 
-        $function->setEndLine($function_end_line);
         $this->functions[] = $function;
 
         return $current_index;

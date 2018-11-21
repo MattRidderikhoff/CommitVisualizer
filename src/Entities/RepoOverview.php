@@ -17,12 +17,17 @@ class RepoOverview
         $file_name = $file->getName();
 
         if (!isset($this->files[$file_name])) {
-            $this->files[$file_name];
+            $this->files[$file_name] = $file;
         }
     }
 
     public function hasFile($file_name) {
 
         return isset($this->files[$file_name]);
+    }
+
+    public function modifyFile($file_name, $file) {
+        $file_lifespan = $this->files[$file_name];
+        $file_lifespan->modify($file);
     }
 }

@@ -17,24 +17,26 @@ class APIService
 {
     private $client;
     private $serializer;
-
-    const AUTH_ARRAY = ['headers' => ['Authorization' => 'token e4bd4757c24afcc75eb9ad0564aeeed110aec559']];
+    private $auth_array;
 
     public function __construct(SerializerInterface $serializer)
     {
         $this->client = new Client();
         $this->serializer = $serializer;
+        
+        $github_auth_token = file_get_contents('github_auth_token.txt');
+        $this->auth_array = ['headers' => ['Authorization' => 'token ' . $github_auth_token]];
     }
 
     public function getAllCommits($repo_uri) {
-        $response = $this->client->request('GET', $repo_uri.'commits', self::AUTH_ARRAY);
+        $response = $this->client->request('GET', $repo_uri.'commits', $this->auth_array);
         $response_contents = $response->getBody()->getContents();
         $commits = $this->serializer->decode($response_contents, 'json');
         $link_header = parse_header($response->getHeader('Link'));
 
         while ($this->moreLinks($link_header)) {
 
-            $response = $this->client->request('GET', $this->nextLink($link_header), self::AUTH_ARRAY);
+            $response = $this->client->request('GET', $this->nextLink($link_header), $this->auth_array);
             $response_contents = $response->getBody()->getContents();
             $next_commits = $this->serializer->decode($response_contents, 'json');
 
@@ -65,7 +67,7 @@ class APIService
     }
 
     public function getCommit($repo_uri, $commit_sha) {
-        $response = $this->client->request('GET', $repo_uri.'commits/'.$commit_sha, self::AUTH_ARRAY);
+        $response = $this->client->request('GET', $repo_uri.'commits/'.$commit_sha, $this->auth_array);
         $response_contents = $response->getBody()->getContents();
         return $this->serializer->decode($response_contents, 'json');
     }

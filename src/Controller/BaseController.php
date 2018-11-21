@@ -24,19 +24,13 @@ class BaseController extends AbstractController
     private $repo_uri;
     private $repo;
 
-    private $files = [];
-
     const TEST_URI = 'https://api.github.com/repos/octocat/Hello-World/';
 
     const GITHUB_API_URI = 'https://api.github.com/';
     const OUR_PROJECT_URI = 'repos/MattRidderikhoff/DashboardGenerator/';
 
-
-    const AUTH_ARRAY = ['headers' => ['Authorization' => 'token c368b842e3e756e573997c2f79c38e6c5a3dbc4d']];
-
     public function renderHome(APIService $api_service, SerializerInterface $serializer)
     {
-
         $this->serializer = $serializer;
         $this->api_service = $api_service;
 
@@ -54,9 +48,23 @@ class BaseController extends AbstractController
 //        $all_commit_info = $this->api_service->getAllCommitInfo($this->repo_uri);  // online version
         $all_commit_info = $this->getAllCommitInfoSaved(); // offline version
 
+        // order commits by date (earliest -> lastest)
+        usort($all_commit_info,
+            function($a, $b) {
+                $a_info = $a['commit_info']['commit']['committer']['date'];
+                $b_info = $b['commit_info']['commit']['committer']['date'];
+
+                $date_a = new \DateTime($a_info);
+                $date_b = new \DateTime($b_info);
+
+                return $date_a > $date_b;
+            });
+
         foreach ($all_commit_info as $commit) {
             $this->parseCommit($commit);
         }
+
+        $i = 'i';
     }
 
     private function parseCommit($commit_all)
@@ -72,18 +80,28 @@ class BaseController extends AbstractController
             $file_name = $file['filename'];
 
             // only track PHP files
-            if (strpos($file_name, '.php') !== false && strpos($file_name, 'vendor') === false) { // 2nd condition is ignoring certain files from our old project`x
+            if (strpos($file_name, '.php') !== false) {
 
-                if ($file['status'] == 'added') {
+                if (strpos($file_name, 'vendor') === false &&
+                   (strpos($file_name, 'src/') !== false)) { // 2nd condition is ignoring certain files from our old project`x
 
-                    if (!$this->repo->hasFile($file_name)) {
+                    if ($file['status'] == 'added') {
 
-                        $file_lifespan = new FileLifespan($file);
-                        $this->files[] = $file_lifespan;
+                        if (!$this->repo->hasFile($file_name)) {
+
+                            if ($file_name == 'src/Controller/BaseController.php') {
+                                $i = 1;
+                            }
+                            $file_lifespan = new FileLifespan($file);
+                            $this->repo->addFile($file_lifespan);
+                        }
+
+                    } elseif ($file['status'] == 'modified') {
+                        $this->repo->modifyFile($file_name, $file);
+
+                    } elseif ($file['status'] == 'renamed') {
+                        // TODO
                     }
-
-                } else {
-
                 }
             }
         }
