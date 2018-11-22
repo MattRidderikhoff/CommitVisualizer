@@ -33,36 +33,72 @@ class FileLifespan
         $lines = explode("\n", $file['patch']);
 
         $current_index = 0;
-        $new_function_states = null;
 
-        $commit_chunks = [];
+        if($this->file_name == 'src/Controller/BaseController.php' &&
+            count($this->functions[0]->getCommits()) >= 7) {
+            $i = 1;
+        }
+
+
+        $chunks = [];
         while ($current_index < (count($lines) - 1)) {
 
             $current_line = $lines[$current_index];
             if (strpos($current_line, '@@ ') !== false) {
 
-                if($this->file_name == 'src/Controller/BaseController.php' &&
-                    count($this->functions[0]->getCommits()) >= 6) {
-                    $i = 1;
-                }
-
                 $results = $this->processCommitChunk($lines, $current_index, $commit_date, $file);
 
-                $new_function_states = $results['new_function_states'];
+                $chunks[] = $results['chunk'];
                 $current_index = $results['current_line_num'];
             } else {
                 $current_index++;
             }
         }
 
-        foreach ($this->functions as $function) {
+        if (count($chunks) >1) {
+            $a = 1;
+        }
 
-            $new_function_state = $new_function_states[$function->getCurrentName()];
-            $new_function_state->setCommitBlob($file['blob_url']);
-            $function->addNewFunctionState($new_function_state);
+        $current_chunk_index = 0;
+        $chunk_count = count($chunks);
+        $chunk_range_changes = 0;
+        while ($current_chunk_index < $chunk_count) {
+
+            $current_chunk = $chunks[$current_chunk_index];
+//            $current_chunk = $this->updateChunkRange($current_chunk, $chunk_range_changes);
+
+            // TODO: is this sufficient ?
+            if ($current_chunk['range']['start_at'] < $current_chunk['range']['new_start_at'])
+            {
+                $new_start_at = $chunks[$current_chunk_index]['range']['new_start_at'];
+
+                $chunks[$current_chunk_index]['range']['end_at'] += $new_start_at - $chunks[$current_chunk_index]['range']['start_at'];
+                $chunks[$current_chunk_index]['range']['start_at'] = $new_start_at;
+            }
+
+//            $chunk_range_changes += $current_chunk['range']['total_additions'];
+            $current_chunk_index++;
+        }
+
+        if (count($chunks) >1) {
+            $a = 1;
+        }
+
+        foreach($this->functions as $function_lifespan) {
+
+            $function_state = $function_lifespan->getCurrentFunction();
+            $function_lifespan->updateFunctionState($function_state, $commit_date, $chunks);
         }
 
         $i = 1;
+    }
+
+    private function updateChunkRange($current_chunk, $chunk_range_changes) {
+        $current_chunk['range']['start_at'] += $chunk_range_changes;
+        $current_chunk['range']['end_at'] += $chunk_range_changes;
+        $current_chunk['range']['new_end_at'] += $chunk_range_changes;
+
+        return $current_chunk;
     }
 
     private function processCommitChunk($lines, $current_line_num, $commit_date, $file) {
@@ -84,16 +120,7 @@ class FileLifespan
 
         $chunk['range'] = $this->getChunkRange($chunk_info, $file);
 
-        $new_function_states = [];
-        foreach($this->functions as $function_lifespan) {
-
-            $function_state = $function_lifespan->getCurrentFunction();
-            $new_function_state = $function_lifespan->updateFunctionState($function_state, $commit_date, $chunk);
-
-            $new_function_states[$new_function_state->getName()] = $new_function_state;
-        }
-
-        return ['current_line_num' => $current_line_num, 'new_function_states' => $new_function_states];
+        return ['current_line_num' => $current_line_num, 'chunk' => $chunk];
     }
 
     //TODO: what if commit old > commit new
@@ -103,6 +130,10 @@ class FileLifespan
 
         $chunk_range['start_at'] = intval($chunk_remove[0]);
         $chunk_range['end_at'] = $chunk_range['start_at'] + $chunk_remove[1];
+
+        $chunk_add = explode(',', trim($chunk_info[1]));
+        $chunk_range['new_start_at'] = intval($chunk_add[0]);
+        $chunk_range['new_end_at'] = $chunk_range['new_start_at'] + intval($chunk_add[1]);
 
         $chunk_range['total_additions'] = $file['additions'] - $file['deletions'];
 
