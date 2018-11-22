@@ -31,17 +31,30 @@ class FunctionLifespan
         $new_function_state = clone $function_state;
         $new_function_state->setCommitDate($commit_date);
 
+        $chunk_line_offset = 0;
         $current_line_index = 0;
         while (isset($chunk['lines'][$current_line_index])) {
 
-            $chunk_line_num = $chunk['range']['start_at'] + $current_line_index;
+            $chunk_line_num = $chunk['range']['start_at'] + $current_line_index + $chunk_line_offset;
+            $chunk_line = $chunk['lines'][$current_line_index];
+
             if ($this->isChunkLineInFunction($new_function_state, $chunk_line_num)) {
 
-                $this->updateFunctionLines($new_function_state, $chunk['lines'][$current_line_index], $chunk_line_num);
+                switch($this->getChunkLineType($chunk_line)) {
+                    case '+':
+                        $new_function_state->addLine($chunk_line_num, $this->removeChunkLineType($chunk_line));
+                        break;
+                    case '-':
+                        $new_function_state->removeLine($chunk_line_num);
+                        $chunk_line_offset--;
+                        break;
+                    default: // no change
+                        break;
+                }
 
             } elseif ($this->isChunkLineBeforeFunction($new_function_state, $chunk_line_num)) {
 
-//                $this->updateFunctionLineNums($function_state, $chunk_line_num);
+                $new_function_state->updateRange($this->calculateRangeChange($chunk_line));
             }
 
             $current_line_index++;
@@ -50,18 +63,26 @@ class FunctionLifespan
          $this->commits[] = $new_function_state;
     }
 
-    // TODO: this assumes that all changes in the chunk are happening WITHIN this function. They may be happening before or after
-    private function updateFunctionLines(FunctionState $function_state, $chunk_line, $chunk_line_num) {
+    private function calculateRangeChange($chunk_line) {
         switch($this->getChunkLineType($chunk_line)) {
             case '+':
-                $function_state->addLine($chunk_line_num, $this->removeChunkLineType($chunk_line));
+                return 1;
                 break;
             case '-':
-                $function_state->removeLine($chunk_line_num);
+                return -1;
                 break;
             default: // no change
+                return 0;
                 break;
         }
+    }
+
+    private function isChunkLineInFunction(FunctionState $function_state, $line_num) {
+        return ($line_num >= $function_state->getStartLineNum() && $line_num <= $function_state->getEndLineNum());
+    }
+
+    private function isChunkLineBeforeFunction(FunctionState $function_state, $line_num) {
+        return $line_num < $function_state->getStartLineNum();
     }
 
     private function getChunkLineType($line) {
@@ -70,13 +91,5 @@ class FunctionLifespan
 
     private function removeChunkLineType($line) {
         return substr($line, 1);
-    }
-
-    private function isChunkLineInFunction(FunctionState $function_state, $line_num) {
-        return ($line_num >= $function_state->getStartLineNum() && $line_num <= $function_state->getEndLineNum());
-    }
-
-    private function isChunkLineBeforeFunction(FunctionState $function_state, $line_num) {
-        return $function_state->getStartLineNum() < $line_num;
     }
 }

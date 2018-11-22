@@ -30,12 +30,21 @@ class FunctionState
 
     public function addLine($line_number, $line) {
         array_splice($this->lines, $line_number - $this->start_line_num, 0, $line);
+
+        end($this->lines);
         $this->end_line_num++;
     }
 
     public function removeLine($line_number) {
         unset($this->lines[$line_number - $this->start_line_num]);
+
+        $this->lines = array_values($this->lines);
         $this->end_line_num--;
+    }
+
+    public function updateRange($range_change) {
+        $this->start_line_num += $range_change;
+        $this->end_line_num += $range_change;
     }
 
     public function setCommitDate($commit_date) {
