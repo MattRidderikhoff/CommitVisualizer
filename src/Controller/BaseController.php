@@ -64,7 +64,7 @@ class BaseController extends AbstractController
             $this->parseCommit($commit);
         }
 
-        $i = 'i';
+        $i = 'i'; // temp for testing
     }
 
     private function parseCommit($commit_all)
@@ -87,7 +87,7 @@ class BaseController extends AbstractController
 
                         if (!$this->repo->hasFile($file_name)) {
 
-                            if ($file_name == 'src/Controller/BaseController.php') {
+                            if ($file_name == 'src/Entities/Chart.php') { // temp testing function
                                 $i = 1;
                             }
                             $file_lifespan = new FileLifespan($file, $commit_date);
@@ -95,7 +95,7 @@ class BaseController extends AbstractController
                         }
 
                     } elseif ($file['status'] == 'modified') {
-                        $this->repo->modifyFile($file_name, $file);
+                        $this->repo->modifyFile($file, $commit_date);
 
                     } elseif ($file['status'] == 'renamed') {
                         // TODO

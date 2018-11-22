@@ -12,27 +12,49 @@ namespace App\Entities;
 class FunctionState
 {
     private $name;
-    private $start_line;
-    private $end_line;
     private $commit_date;
+    private $lines;
 
-    public function __construct($name, $commit_date, $start_line, $end_line = null)
+    private $start_line_num;
+    private $end_line_num;
+
+    public function __construct($name, $commit_date, $lines, $start_line_num)
     {
         $this->name = $name;
-        $this->start_line = $start_line;
         $this->commit_date = $commit_date;
-        $this->end_line = $end_line;
+        $this->lines = $lines;
+
+        $this->start_line_num = $start_line_num;
+        $this->end_line_num = $start_line_num + count($this->lines) - 1;
     }
 
-    public function setEndLine($end_line) {
-        $this->end_line = $end_line;
+    public function addLine($line, $line_index) {
+        array_splice( $this->lines, $line_index-1, 0, $line);
+        $this->end_line_num++;
     }
 
-    public function hasEndLine() {
-        return isset($this->end_line);
+    public function removeLine($line_index) {
+        unset($this->lines[$line_index]);
+        $this->end_line_num--;
+    }
+
+    public function setCommitDate($commit_date) {
+        $this->commit_date = $commit_date;
     }
 
     public function getCommitDate() {
         return $this->commit_date;
+    }
+
+    public function getLines() {
+        return $this->lines;
+    }
+
+    public function getStartLineNum() {
+        return $this->start_line_num;
+    }
+
+    public function getEndLineNum() {
+        return $this->end_line_num;
     }
 }

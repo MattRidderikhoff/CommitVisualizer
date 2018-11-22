@@ -26,8 +26,8 @@ class RepoOverview
         return isset($this->files[$file_name]);
     }
 
-    public function modifyFile($file_name, $file) {
-        $file_lifespan = $this->files[$file_name];
-        $file_lifespan->modify($file);
+    public function modifyFile($file, $commit_date) {
+        $file_lifespan = $this->files[$file['filename']];
+        $file_lifespan->modify($file, $commit_date);
     }
 }
