@@ -22,23 +22,50 @@ class FileLifespan
         $this->file_size = $file['additions'];
         $this->creation_date = $commit_date;
         $this->addFile($file['patch'], $commit_date);
-    }
 
-    public function modify($file, $commit_date) {
-        $lines = explode("\n", $file['patch']);
-
-        $current_line_num = 0;
-        while ($current_line_num < (count($lines) - 1)) {
-            if (strpos($lines[$current_line_num], '@@ ') !== false) {
-
-                $current_line_num = $this->processCommitChunk($lines, $current_line_num, $commit_date);
-            }
-
-            $current_line_num++;
+        foreach ($this->functions as $function) {
+            $function->getCurrentFunction()->setCommitBlob($file['blob_url']);
         }
     }
 
-    private function processCommitChunk($lines, $current_line_num, $commit_date) {
+    // TODO: update file_size
+    public function modify($file, $commit_date) {
+        $lines = explode("\n", $file['patch']);
+
+        $current_index = 0;
+        $new_function_states = null;
+
+        $commit_chunks = [];
+        while ($current_index < (count($lines) - 1)) {
+
+            $current_line = $lines[$current_index];
+            if (strpos($current_line, '@@ ') !== false) {
+
+                if($this->file_name == 'src/Controller/BaseController.php' &&
+                    count($this->functions[0]->getCommits()) >= 6) {
+                    $i = 1;
+                }
+
+                $results = $this->processCommitChunk($lines, $current_index, $commit_date, $file);
+
+                $new_function_states = $results['new_function_states'];
+                $current_index = $results['current_line_num'];
+            } else {
+                $current_index++;
+            }
+        }
+
+        foreach ($this->functions as $function) {
+
+            $new_function_state = $new_function_states[$function->getCurrentName()];
+            $new_function_state->setCommitBlob($file['blob_url']);
+            $function->addNewFunctionState($new_function_state);
+        }
+
+        $i = 1;
+    }
+
+    private function processCommitChunk($lines, $current_line_num, $commit_date, $file) {
         $chunk_info = $lines[$current_line_num];
         $chunk_info = explode('@@', $chunk_info)[1];
         $chunk_info = explode('+', $chunk_info);
@@ -55,34 +82,31 @@ class FileLifespan
             }
         }
 
-        $chunk['range'] = $this->getChunkRange($chunk_info);
+        $chunk['range'] = $this->getChunkRange($chunk_info, $file);
+
+        $new_function_states = [];
         foreach($this->functions as $function_lifespan) {
 
             $function_state = $function_lifespan->getCurrentFunction();
-            $function_lifespan->updateFunctionState($function_state, $commit_date, $chunk);
+            $new_function_state = $function_lifespan->updateFunctionState($function_state, $commit_date, $chunk);
+
+            $new_function_states[$new_function_state->getName()] = $new_function_state;
         }
 
-        return $current_line_num;
+        return ['current_line_num' => $current_line_num, 'new_function_states' => $new_function_states];
     }
 
-    private function getChunkRange($chunk_info) {
-        $chunk_minus = substr(trim($chunk_info[0]), 1);
-        $chunk_minus = explode(',', $chunk_minus);
+    //TODO: what if commit old > commit new
+    private function getChunkRange($chunk_info, $file) {
+        $chunk_remove = substr(trim($chunk_info[0]), 1);
+        $chunk_remove = explode(',', $chunk_remove);
 
-        $chunk_add = explode(',', trim($chunk_info[1]));
+        $chunk_range['start_at'] = intval($chunk_remove[0]);
+        $chunk_range['end_at'] = $chunk_range['start_at'] + $chunk_remove[1];
 
-        // [0] = chunk_starting_line_num, [1] = chunk_length
+        $chunk_range['total_additions'] = $file['additions'] - $file['deletions'];
 
-        $chunk_old['start_at'] = intval($chunk_minus[0]);
-        $chunk_old['end_at'] = $chunk_old['start_at'] + $chunk_minus[1];
-
-        return $chunk_old;
-
-//        $chunk_new['starts_at'] = $chunk_add[0];
-//        $chunk_new['end_at'] = $chunk_new['starts_at'] + $chunk_add[1];
-
-//        $chunk_range['start_at'] = min($chunk_old['starts_at'], $chunk_new['starts_at']);
-//        $chunk_rage['end_at'] = $chunk_old['end_at'];
+        return $chunk_range;
     }
 
     private function addFile($patch, $commit_date) {

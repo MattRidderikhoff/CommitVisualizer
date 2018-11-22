@@ -18,6 +18,8 @@ class FunctionState
     private $start_line_num;
     private $end_line_num;
 
+    private $commit_blob;
+
     public function __construct($name, $commit_date, $lines, $start_line_num)
     {
         $this->name = $name;
@@ -51,8 +53,16 @@ class FunctionState
         $this->commit_date = $commit_date;
     }
 
+    public function setCommitBlob($commit_blob) {
+        $this->commit_blob = $commit_blob;
+    }
+
     public function getCommitDate() {
         return $this->commit_date;
+    }
+
+    public function getName() {
+        return $this->name;
     }
 
     public function getLines() {
