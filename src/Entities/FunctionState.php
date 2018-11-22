@@ -28,13 +28,13 @@ class FunctionState
         $this->end_line_num = $start_line_num + count($this->lines) - 1;
     }
 
-    public function addLine($line, $line_index) {
-        array_splice( $this->lines, $line_index-1, 0, $line);
+    public function addLine($line_number, $line) {
+        array_splice($this->lines, $line_number - $this->start_line_num, 0, $line);
         $this->end_line_num++;
     }
 
-    public function removeLine($line_index) {
-        unset($this->lines[$line_index]);
+    public function removeLine($line_number) {
+        unset($this->lines[$line_number - $this->start_line_num]);
         $this->end_line_num--;
     }
 
