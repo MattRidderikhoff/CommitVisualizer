@@ -45,7 +45,35 @@ class BaseController extends AbstractController
         //      this is because the file may be changed in a commit, but not that specific function
         return $this->render('home.html.twig',
           [ 'files' => $this->repo->getFiles(),
+            'colours' => $this->generateColors($this->repo->getFiles()),
             'dates' => $this->repo->getCommitDates()]);
+    }
+
+    private function generateColors($files) {
+      $colours = [];
+      foreach ($files as $file) {
+        $colour = $this->getNewColour($colours);
+        $file_name = $file->getName();
+        $colours[$file_name] = $colour;
+      }
+      return $colours;
+    }
+
+    private function getRandomColour() {
+      $letters = str_split('0123456789ABCDEF');
+      $colour = '#';
+      for ($i = 0; $i < 6; $i++) {
+        $colour .= $letters[random_int(0, 15)];
+      }
+      return $colour;
+    }
+
+    private function getNewColour($existing_colours) {
+      $random_colour = $this->getRandomColour();
+      while (in_array($random_colour, $existing_colours)) {
+        $random_colour = $this->getRandomColour();
+      }
+      return $random_colour;
     }
 
     private function generateCommitHistory()

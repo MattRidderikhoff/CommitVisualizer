@@ -1,0 +1,68 @@
+{% set yCount = 1 %}
+<canvas id="bubble-chart" height="300" width ="300"></canvas>
+<script>
+    var timeFormat = 'YYY-MM-DD';
+    new Chart(document.getElementById("bubble-chart"), {
+        type: 'bubble',
+        data: {
+            datasets: [
+                {% for file in files %}
+                    {% for func in file.getFunctions() %}
+                        {
+                            label: "{{ func.getCurrentName() }}",
+                            data:
+                                [
+                                    {% for commit in func.getCommits() %}
+                                        {
+                                            x: moment("{{ commit.getCommitDate().format('Y-m-d') }}").format(timeFormat),
+                                            y: {{ yCount }},
+                                            r: 3 + {{ commit.getSize() }}*0.05
+                                        },
+                                    {% endfor %}
+                                ],
+                            fill:false,
+                            borderColor:"{{ colours[file.getName()] }}",
+                            backgroundColor:"{{ colours[file.getName()] }}"
+                        },
+                    {% set yCount = yCount + 1 %}
+                    {% endfor %}
+                {% endfor %}
+            ]
+        },
+        options: {
+            title: {
+                display: true,
+                text: "Function Lifespan"
+            }, scales: {
+                yAxes: [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: "Functions"
+                    },
+                    ticks: {
+                        min: 0,
+                        max: {{ yCount }},
+                        stepSize: 1
+                    },
+                    stacked: true
+                }],
+                xAxes: [{
+                    type: 'time',
+                    time: {
+                        format: timeFormat,
+                        unit: 'day',
+                        tooltipFormat: 'll'
+                        // max: moment("2018-10-18").format(timeFormat)
+                    },
+                    scaleLabel: {
+                        display: true,
+                        labelString: "Time"
+                    },
+                    gridLines: {
+                        display: false
+                    }
+                }]
+            }
+        }
+    });
+</script>
