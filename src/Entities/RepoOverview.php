@@ -30,4 +30,28 @@ class RepoOverview
         $file_lifespan = $this->files[$file['filename']];
         $file_lifespan->modify($file, $commit_date);
     }
+
+  /**
+   * @return array of files
+   */
+  public function getFiles(): array
+  {
+    return $this->files;
+  }
+
+  public function getCommitDates(): array
+  {
+    $dates = [];
+    foreach ($this->files as $file) {
+      foreach ($file->getFunctions() as $func){
+        foreach ($func->getCommits() as $commit){
+            $date = $commit->getCommitDate();
+            array_push($dates, $date->format('Y-m-d'));
+        }
+      }
+    }
+    $datesUnique= array_unique($dates);
+    asort($datesUnique);
+    return $datesUnique;
+  }
 }

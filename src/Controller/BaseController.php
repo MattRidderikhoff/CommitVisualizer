@@ -43,7 +43,9 @@ class BaseController extends AbstractController
 
         // TODO: only consider a function to have been "Changed" if something changed between commits
         //      this is because the file may be changed in a commit, but not that specific function
-        return $this->render('home.html.twig', []);
+        return $this->render('home.html.twig',
+          [ 'files' => $this->repo->getFiles(),
+            'dates' => $this->repo->getCommitDates()]);
     }
 
     private function generateCommitHistory()
