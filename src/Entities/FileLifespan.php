@@ -74,10 +74,12 @@ class FileLifespan
             $a = 1;
         }
 
-        if($this->file_name == 'src/Entities/BarChart.php') {
+        if($this->file_name == 'src/Entities/BarChart.php'&&
+            count($this->functions[0]->getCommits()) >= 10) {
             $i = 1;
         }
-        if($this->file_name == 'src/Controller/BaseController.php') {
+        if($this->file_name == 'src/Controller/BaseController.php' &&
+            count($this->functions[0]->getCommits()) >= 9) {
             $i = 1;
         }
 
@@ -97,17 +99,15 @@ class FileLifespan
         foreach($this->functions as $function_lifespan) {
             $function_states = $this->refactoringUpdate($function_lifespan->getCurrentFunction(), $commit_date);
 
-            if (count($function_states) > 1) { // refactoring has occurred, we need to update functions
-                foreach ($function_states as $new_function_state) {
+            foreach ($function_states as $new_function_state) {
 
-                    $new_function_state->setCommitBlob($file['blob_url']);
+                $new_function_state->setCommitBlob($file['blob_url']);
 
-                    $function_lifespan = $this->getFunction($new_function_state->getName());
-                    if (isset($function_lifespan)) { // remove excess by replacing the existing function state
-                        $function_lifespan->replaceFunctionState($new_function_state);
-                    } else {
-                        $this->functions[] = new FunctionLifespan($new_function_state);
-                    }
+                $function_lifespan = $this->getFunction($new_function_state->getName());
+                if (isset($function_lifespan)) { // remove excess by replacing the existing function state
+                    $function_lifespan->replaceFunctionState($new_function_state);
+                } else {
+                    $this->functions[] = new FunctionLifespan($new_function_state);
                 }
             }
         }
@@ -180,6 +180,11 @@ class FileLifespan
                 } else {
                     $left_brace_count--;
                 }
+            }
+
+            // case where entire function isn't in the chunk
+            if (!isset($lines[$current_index+1])) {
+
             }
         }
 
