@@ -30,8 +30,8 @@ class FunctionLifespan
         return $this->commits;
     }
 
-
-    public function addNewFunctionState($new_function_state) {
+    public function replaceFunctionState($new_function_state) {
+        array_pop($this->commits);
         $this->commits[] = $new_function_state;
     }
 
