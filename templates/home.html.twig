@@ -62,11 +62,11 @@
     <div class="chart">
         <canvas id="bubble-chart" width="500" height="200" style="padding-right: 20px"></canvas>
         <script>
-            var timeFormat = 'YYYY-MM-DD';
+            var timeFormat = 'YYY-MM-DD';
             new Chart(document.getElementById("bubble-chart"), {
                 type: 'bubble',
                 data: {
-                    labels: "Africa",
+                    labels: "Functions",
                     datasets: [
                         {
                             label: ["Function A"],
@@ -149,9 +149,9 @@
                             type: 'time',
                             time: {
                                 format: timeFormat,
-                                // round: 'day'
-                                tooltipFormat: 'll HH:mm',
-                                max: moment("2018-10-10")
+                                unit: 'day',
+                                tooltipFormat: 'll',
+                                max: moment("2018-10-10").format(timeFormat)
                             },
                             scaleLabel: {
                                 display: true,
