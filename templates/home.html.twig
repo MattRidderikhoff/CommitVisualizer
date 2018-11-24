@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}DashboardCreator{% endblock %}</title>
+    <title>{% block title %}Function Lifespan Visualizer{% endblock %}</title>
     {% block stylesheets %}
         <link rel="stylesheet" type="text/css" href="css/home.css">
     {% endblock %}
@@ -11,41 +11,58 @@
 {% block body %}
 
     <div>
-        <h2>Current Datasets</h2>
-        <ul> </ul>
-
-        <svg width='200' height='500'></svg>
+        <h2>Function Lifespan Visualization</h2>
     </div>
+    <div class="filter">
+        <div class="filter-left">
+            <form id="filter_by_file" action="/" method="post" enctype="multipart/form-data">
+                <p>View function lifespan for files:</p>
+                <select multiple class="form-control" id="files">
+                    {% for file in files %}
+                        <option value="{{file.getName()}}">{{file.getName()}}</option>
+                    {% endfor %}
+                </select>
+                <input type="submit" name="filter_by_file_button" value="Filter by File">
+            </form>
+        </div>
+
+        <div class="filter-right">
+            <form id="filter_by_date" action="/" method="post" enctype="multipart/form-data">
+                <p>View function lifespan between dates:</p>
+                <div class="filter-date-from">
+                    From: <br>
+                    <select class="form-control" id="files">
+                        {% for date in dates %}
+                            <option value="{{date}}">{{date}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-date-to">
+                    To: <br>
+                    <select class="form-control" id="files">
+                        {% for date in dates %}
+                            <option value="{{date}}">{{date}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <input type="submit" name="filter_by_date_button" value="Filter by Dates">
+
+            </form>
+        </div>
+    </div>
+
+
 
 {% endblock %}
 
 {% block javascripts %}
-    <script src='https://d3js.org/d3.v4.min.js'></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
 
-    <script>
-        var fruits = ['apple', 'mango', 'banana', 'orange'];
-        d3.select('ul')
-            .selectAll('li')
-            .data(fruits)
-            .enter()
-            .append('li')
-            .text(function(d) { return d; });
+    <div class="chart">
+        {% include 'bubble_chart.html.twig' %}
+    </div>
 
-        var data = [80, 120, 60, 150, 200];
-
-        var barHeight = 20;
-
-        var bar = d3.select('svg')
-            .selectAll('rect')
-            .data(data)
-            .enter()
-            .append('rect')
-            .attr('width', function(d) {  return d; })
-            .attr('height', barHeight - 1)
-            .attr('transform', function(d, i) {
-                return "translate(0," + i * barHeight + ")";
-            });
-    </script>
 {% endblock %}
 </body>
 </html>

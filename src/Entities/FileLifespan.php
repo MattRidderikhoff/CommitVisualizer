@@ -212,4 +212,14 @@ class FileLifespan
     public function getName() {
         return $this->file_name;
     }
+
+  /**
+   * @return array of functions
+   */
+  public function getFunctions(): array
+  {
+    return $this->functions;
+  }
+
+
 }
