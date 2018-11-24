@@ -315,4 +315,12 @@ class FileLifespan
 
         return null;
     }
+
+  /**
+   * @return array of functions
+   */
+  public function getFunctions(): array
+  {
+    return $this->functions;
+  }
 }

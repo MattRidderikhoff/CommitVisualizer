@@ -76,4 +76,8 @@ class FunctionState
     public function getEndLineNum() {
         return $this->end_line_num;
     }
+
+    public function getSize() {
+      return $this->end_line_num - $this->start_line_num;
+    }
 }
