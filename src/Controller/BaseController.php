@@ -43,9 +43,6 @@ class BaseController extends AbstractController
         $files = $this->repo->getFiles();
         $dates = $this->repo->getCommitDates();
 
-//        $request_handler->handleHomeRequest($request);
-
-
         // TODO: only consider a function to have been "Changed" if something changed between commits
         //      this is because the file may be changed in a commit, but not that specific function
         return $this->render('home.html.twig',
