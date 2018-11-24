@@ -143,7 +143,8 @@ class FileLifespan
         return $functions;
     }
 
-    private function getRefactoredFunction($lines, $current_index, $current_line_num, $commit_date) {
+    private function getRefactoredFunction($lines, $current_index, $current_line_num, $commit_date)
+    {
 
         $function['name'] = $this->generateFunctionName($lines[$current_index]);
         $function_start_line_num = $current_line_num;
@@ -182,15 +183,33 @@ class FileLifespan
                 }
             }
 
-            // case where entire function isn't in the chunk
-            if (!isset($lines[$current_index+1])) {
+            // NEED TO UPDATE SO THAT A FUNCTION COMMIT DOESN'T REWRITE THE ENTIRE FUNCTION, AND FILLS IN ANY GAPS
+            if (!isset($lines[$current_index + 1]) && !isset($function_end_line)) {
+                $remaining_lines = $this->getRemainingFunctionLine($function['name'], $function['lines'], $current_line_num, $function_start_line_num, $commit_date);
 
+                $function['lines'] = array_merge($function['lines'], $remaining_lines);
+                $function_end_line = end($function['lines']);
             }
         }
 
 
-        $new_function_state = new FunctionState($function['name'], $commit_date, $function['lines'], $function_start_line_num);
-        return ['function' => $new_function_state, 'current_index' => $current_index];
+        $results['function'] = new FunctionState($function['name'], $commit_date, $function['lines'], $function_start_line_num);
+        $results['current_index'] = $current_index;
+        return $results;
+    }
+
+    private function getRemainingFunctionLine($function_name, $lines, $current_line_num, $start_line_num, $commit_date) {
+        $old_commit = $this->getFunction($function_name)->getPreviousCommit();
+
+        $old_lines = $old_commit->getLines();
+        $remaining_lines = [];
+        foreach ($old_lines as $old_line) {
+            if (!in_array($old_line, $lines)) {
+                $remaining_lines[] = $old_line;
+            }
+        }
+
+        return $remaining_lines;
     }
 
     private function processCommitChunk($lines, $current_line_num, $commit_date, $file) {

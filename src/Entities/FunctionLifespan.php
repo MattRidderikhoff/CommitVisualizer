@@ -26,6 +26,10 @@ class FunctionLifespan
         return end($this->commits);
     }
 
+    public function getPreviousCommit() {
+        return $this->commits[count($this->commits) -2];
+    }
+
     public function getCommits() {
         return $this->commits;
     }
