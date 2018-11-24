@@ -12,6 +12,7 @@ use App\Entities\CommitHistory;
 use App\Entities\FileLifespan;
 use App\Entities\RepoOverview;
 use App\Services\APIService;
+use App\Services\ColourService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -29,7 +30,7 @@ class BaseController extends AbstractController
     const GITHUB_API_URI = 'https://api.github.com/';
     const OUR_PROJECT_URI = 'repos/MattRidderikhoff/DashboardGenerator/';
 
-    public function renderHome(APIService $api_service, SerializerInterface $serializer)
+    public function renderHome(APIService $api_service, ColourService $colour_service, SerializerInterface $serializer)
     {
         $this->serializer = $serializer;
         $this->api_service = $api_service;
@@ -43,83 +44,12 @@ class BaseController extends AbstractController
         $files = $this->repo->getFiles();
         $dates = $this->repo->getCommitDates();
 
-        // TODO: only consider a function to have been "Changed" if something changed between commits
-        //      this is because the file may be changed in a commit, but not that specific function
         return $this->render('home.html.twig',
-          [ 'files' => $files,
-            'colours' => $this->generateColors($this->repo->getFiles()),
-            'dates' => $dates,
-            'functions' => $this->repo->getFunctionNames()
-          ]);
-    }
-
-    private function generateColors($files) {
-      $colours = [];
-      $usedColours = [];
-      foreach ($files as $file) {
-        $colour = $this->getNewColour($usedColours);
-        $backgroundColour = $this->hexTorgba($colour, 0.3);
-        $borderColour = $this->hexTorgba($colour);
-        $file_name = $file->getName();
-        $colours[$file_name] = [$backgroundColour, $borderColour];
-        array_push($usedColours, $colour);
-      }
-      return $colours;
-    }
-
-    private function getRandomColour() {
-      $letters = str_split('0123456789ABCDEF');
-      $colour = '#';
-      for ($i = 0; $i < 6; $i++) {
-        $colour .= $letters[random_int(0, 15)];
-      }
-      return $colour;
-    }
-
-  private function hexTorgba($color, $opacity = false) {
-
-    $default = 'rgb(0,0,0)';
-
-    //Return default if no color provided
-    if(empty($color))
-      return $default;
-
-    //Sanitize $color if "#" is provided
-    if ($color[0] == '#' ) {
-      $color = substr( $color, 1 );
-    }
-
-    //Check if color has 6 or 3 characters and get values
-    if (strlen($color) == 6) {
-      $hex = array( $color[0] . $color[1], $color[2] . $color[3], $color[4] . $color[5] );
-    } elseif ( strlen( $color ) == 3 ) {
-      $hex = array( $color[0] . $color[0], $color[1] . $color[1], $color[2] . $color[2] );
-    } else {
-      return $default;
-    }
-
-    //Convert hexadec to rgb
-    $rgb =  array_map('hexdec', $hex);
-
-    //Check if opacity is set(rgba or rgb)
-    if($opacity){
-      if(abs($opacity) > 1)
-        $opacity = 1.0;
-      $output = 'rgba('.implode(",",$rgb).','.$opacity.')';
-    } else {
-      $output = 'rgb('.implode(",",$rgb).')';
-    }
-
-    //Return rgb(a) color string
-    return $output;
-  }
-
-    private function getNewColour($existing_colours) {
-      $random_colour = $this->getRandomColour();
-      while (in_array($random_colour, $existing_colours)) {
-        $random_colour = $this->getRandomColour();
-      }
-      return $random_colour;
+            ['files' => $files,
+                'colours' => $colour_service->generateColors($this->repo->getFiles()),
+                'dates' => $dates,
+                'functions' => $this->repo->getFunctionNames()
+            ]);
     }
 
     private function generateCommitHistory()
@@ -143,12 +73,18 @@ class BaseController extends AbstractController
             $this->parseCommit($commit);
         }
 
-        $i = 'i'; // temp for testing
+        // now look remove commits from functions, where the function wasn't impacted itself
+        $this->removeUnnecessaryCommits();
+    }
+
+    private function removeUnnecessaryCommits() {
+        foreach ($this->repo->getFiles() as $file) {
+            $file->removeUnnecessaryCommits();
+        }
     }
 
     private function parseCommit($commit_all)
     {
-//        $commit = $commit_all['commit'];
         $commit_info = $commit_all['commit_info'];
         $commit_date_raw = $commit_all['commit_info']['commit']['committer']['date'];
         $commit_date = new \DateTime($commit_date_raw);
@@ -166,9 +102,6 @@ class BaseController extends AbstractController
 
                         if (!$this->repo->hasFile($file_name)) {
 
-                            if ($file_name == 'src/Entities/Chart.php') { // temp testing function
-                                $i = 1;
-                            }
                             $file_lifespan = new FileLifespan($file, $commit_date);
                             $this->repo->addFile($file_lifespan);
                         }

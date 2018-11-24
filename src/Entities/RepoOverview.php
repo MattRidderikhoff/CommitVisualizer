@@ -31,9 +31,6 @@ class RepoOverview
         $file_lifespan->modify($file, $commit_date);
     }
 
-  /**
-   * @return array of files
-   */
   public function getFiles(): array
   {
     return $this->files;

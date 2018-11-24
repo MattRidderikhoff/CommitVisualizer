@@ -28,30 +28,23 @@ class FileLifespan
         }
     }
 
-    // TODO: update file_size
     public function modify($file, $commit_date) {
         $lines = explode("\n", $file['patch']);
 
         $current_index = 0;
-
-
         $chunks = [];
         while ($current_index < (count($lines) - 1)) {
 
             $current_line = $lines[$current_index];
             if (strpos($current_line, '@@ ') !== false) {
 
-                $results = $this->processCommitChunk($lines, $current_index, $commit_date, $file);
+                $results = $this->processCommitChunk($lines, $current_index, $file);
 
                 $chunks[] = $results['chunk'];
                 $current_index = $results['current_line_num'];
             } else {
                 $current_index++;
             }
-        }
-
-        if (count($chunks) >1) {
-            $a = 1;
         }
 
         $current_chunk_index = 0;
@@ -70,31 +63,12 @@ class FileLifespan
             $current_chunk_index++;
         }
 
-        if (count($chunks) >1) {
-            $a = 1;
-        }
-
-        if($this->file_name == 'src/Entities/BarChart.php'&&
-            count($this->functions[0]->getCommits()) >= 10) {
-            $i = 1;
-        }
-        if($this->file_name == 'src/Controller/BaseController.php' &&
-            count($this->functions[0]->getCommits()) >= 9) {
-            $i = 1;
-        }
-
         foreach($this->functions as $function_lifespan) {
 
             $function_state = $function_lifespan->getCurrentFunction();
             $function_lifespan->updateFunctionState($function_state, $commit_date, $chunks);
             $function_lifespan->getCurrentFunction()->setCommitBlob($file['blob_url']);
         }
-
-
-        // check functions to see if they have been refactored
-        // 1. do multiple function declarations exist?
-        // 2. has our function been renamed?
-        //   2a. check for the same function signature
 
         foreach($this->functions as $function_lifespan) {
             $function_states = $this->refactoringUpdate($function_lifespan->getCurrentFunction(), $commit_date);
@@ -112,15 +86,17 @@ class FileLifespan
             }
         }
 
+    }
 
-        $i = 1;
+    public function removeUnnecessaryCommits() {
+        foreach ($this->functions as $function) {
+            $function->removeUnnecessaryCommits();
+        }
     }
 
     private function refactoringUpdate(FunctionState $function_state, $commit_date) {
         $lines = $function_state->getLines();
         $start_line_num = $function_state->getStartLineNum();
-        $end_line_num = $function_state->getEndLineNum();
-
 
         $current_index = 0;
         $functions = [];
@@ -145,10 +121,8 @@ class FileLifespan
 
     private function getRefactoredFunction($lines, $current_index, $current_line_num, $commit_date)
     {
-
         $function['name'] = $this->generateFunctionName($lines[$current_index]);
         $function_start_line_num = $current_line_num;
-
 
         // copied from generateFunction()
         $function_start_line = $lines[$current_index];
@@ -183,9 +157,8 @@ class FileLifespan
                 }
             }
 
-            // NEED TO UPDATE SO THAT A FUNCTION COMMIT DOESN'T REWRITE THE ENTIRE FUNCTION, AND FILLS IN ANY GAPS
             if (!isset($lines[$current_index + 1]) && !isset($function_end_line)) {
-                $remaining_lines = $this->getRemainingFunctionLine($function['name'], $function['lines'], $current_line_num, $function_start_line_num, $commit_date);
+                $remaining_lines = $this->getRemainingFunctionLine($function['name'], $function['lines']);
 
                 $function['lines'] = array_merge($function['lines'], $remaining_lines);
                 $function_end_line = end($function['lines']);
@@ -198,7 +171,7 @@ class FileLifespan
         return $results;
     }
 
-    private function getRemainingFunctionLine($function_name, $lines, $current_line_num, $start_line_num, $commit_date) {
+    private function getRemainingFunctionLine($function_name, $lines) {
         $old_commit = $this->getFunction($function_name)->getPreviousCommit();
 
         $old_lines = $old_commit->getLines();
@@ -212,7 +185,7 @@ class FileLifespan
         return $remaining_lines;
     }
 
-    private function processCommitChunk($lines, $current_line_num, $commit_date, $file) {
+    private function processCommitChunk($lines, $current_line_num, $file) {
         $chunk_info = $lines[$current_line_num];
         $chunk_info = explode('@@', $chunk_info)[1];
         $chunk_info = explode('+', $chunk_info);
@@ -234,7 +207,6 @@ class FileLifespan
         return ['current_line_num' => $current_line_num, 'chunk' => $chunk];
     }
 
-    //TODO: what if commit old > commit new
     private function getChunkRange($chunk_info, $file) {
         $chunk_remove = substr(trim($chunk_info[0]), 1);
         $chunk_remove = explode(',', $chunk_remove);
