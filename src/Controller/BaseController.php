@@ -40,21 +40,32 @@ class BaseController extends AbstractController
 
         $this->generateCommitHistory();
 
+        $files = $this->repo->getFiles();
+        $dates = $this->repo->getCommitDates();
+
+//        $request_handler->handleHomeRequest($request);
+
 
         // TODO: only consider a function to have been "Changed" if something changed between commits
         //      this is because the file may be changed in a commit, but not that specific function
         return $this->render('home.html.twig',
-          [ 'files' => $this->repo->getFiles(),
+          [ 'files' => $files,
             'colours' => $this->generateColors($this->repo->getFiles()),
-            'dates' => $this->repo->getCommitDates()]);
+            'dates' => $dates,
+            'functions' => $this->repo->getFunctionNames()
+          ]);
     }
 
     private function generateColors($files) {
       $colours = [];
+      $usedColours = [];
       foreach ($files as $file) {
-        $colour = $this->getNewColour($colours);
+        $colour = $this->getNewColour($usedColours);
+        $backgroundColour = $this->hexTorgba($colour, 0.3);
+        $borderColour = $this->hexTorgba($colour);
         $file_name = $file->getName();
-        $colours[$file_name] = $colour;
+        $colours[$file_name] = [$backgroundColour, $borderColour];
+        array_push($usedColours, $colour);
       }
       return $colours;
     }
@@ -67,6 +78,44 @@ class BaseController extends AbstractController
       }
       return $colour;
     }
+
+  private function hexTorgba($color, $opacity = false) {
+
+    $default = 'rgb(0,0,0)';
+
+    //Return default if no color provided
+    if(empty($color))
+      return $default;
+
+    //Sanitize $color if "#" is provided
+    if ($color[0] == '#' ) {
+      $color = substr( $color, 1 );
+    }
+
+    //Check if color has 6 or 3 characters and get values
+    if (strlen($color) == 6) {
+      $hex = array( $color[0] . $color[1], $color[2] . $color[3], $color[4] . $color[5] );
+    } elseif ( strlen( $color ) == 3 ) {
+      $hex = array( $color[0] . $color[0], $color[1] . $color[1], $color[2] . $color[2] );
+    } else {
+      return $default;
+    }
+
+    //Convert hexadec to rgb
+    $rgb =  array_map('hexdec', $hex);
+
+    //Check if opacity is set(rgba or rgb)
+    if($opacity){
+      if(abs($opacity) > 1)
+        $opacity = 1.0;
+      $output = 'rgba('.implode(",",$rgb).','.$opacity.')';
+    } else {
+      $output = 'rgb('.implode(",",$rgb).')';
+    }
+
+    //Return rgb(a) color string
+    return $output;
+  }
 
     private function getNewColour($existing_colours) {
       $random_colour = $this->getRandomColour();

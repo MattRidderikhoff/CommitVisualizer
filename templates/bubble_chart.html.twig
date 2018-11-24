@@ -1,29 +1,37 @@
 {% set yCount = 1 %}
-<canvas id="bubble-chart" height="300" width ="300"></canvas>
+
+<canvas id="bubble_chart" height="300" width ="300"></canvas>
 <script>
-    var timeFormat = 'YYY-MM-DD';
-    new Chart(document.getElementById("bubble-chart"), {
+    var timeFormat = 'YYYY-MM-DD h:mm a';
+    var bubble_chart = new Chart(document.getElementById("bubble_chart"), {
         type: 'bubble',
         data: {
+            files: [
+                {% for file in files %}
+                    {% for func in file.getFunctions() %}
+                        {% for commit in func.getCommits() %}
+                            "{{ file.getName() }}-{{ func.getCurrentName()}}-{{ commit.getSize() }}",
+                        {% endfor %}
+                    {% endfor %}
+                {% endfor %}
+            ],
             datasets: [
                 {% for file in files %}
                     {% for func in file.getFunctions() %}
-                        {
-                            label: "{{ func.getCurrentName() }}",
-                            data:
-                                [
-                                    {% for commit in func.getCommits() %}
-                                        {
-                                            x: moment("{{ commit.getCommitDate().format('Y-m-d') }}").format(timeFormat),
+                        {% for commit in func.getCommits() %}
+                            {
+                                label: "{{ func.getCurrentName() }}",
+                                data:
+                                    [{
+                                            x: moment("{{ commit.getCommitDate().format('Y-m-d h') }}").format(timeFormat),
                                             y: {{ yCount }},
                                             r: 3 + {{ commit.getSize() }}*0.05
-                                        },
-                                    {% endfor %}
-                                ],
-                            fill:false,
-                            borderColor:"{{ colours[file.getName()] }}",
-                            backgroundColor:"{{ colours[file.getName()] }}"
-                        },
+                                    }],
+                                fill:false,
+                                borderColor:"{{ colours[file.getName()][1] }}",
+                                backgroundColor:"{{ colours[file.getName()][0] }}"
+                            },
+                        {% endfor %}
                     {% set yCount = yCount + 1 %}
                     {% endfor %}
                 {% endfor %}
@@ -33,36 +41,76 @@
             title: {
                 display: true,
                 text: "Function Lifespan"
-            }, scales: {
-                yAxes: [{
+            },
+            scales: {
+                yAxes: [
+                    {
                     scaleLabel: {
                         display: true,
-                        labelString: "Functions"
+                        labelString: "Functions",
+                        fontSize: 15
+
                     },
+
                     ticks: {
                         min: 0,
                         max: {{ yCount }},
-                        stepSize: 1
-                    },
-                    stacked: true
+                        stepSize: 1,
+                        fontSize:10,
+                        callback: function(label, index, labels) {
+                            var functions = [
+                                {% for func in functions %}
+                                    "{{ func }}",
+                                {% endfor %}
+                            ];
+                            if (label == 0) {
+                                return ""
+                            }
+                            return functions[label-1]
+                        }
+                    }
                 }],
                 xAxes: [{
                     type: 'time',
                     time: {
                         format: timeFormat,
                         unit: 'day',
-                        tooltipFormat: 'll'
-                        // max: moment("2018-10-18").format(timeFormat)
+                        // tooltipFormat: 'll',
+                        max: moment("2018-10-18").format(timeFormat)
                     },
                     scaleLabel: {
                         display: true,
-                        labelString: "Time"
+                        labelString: "Time",
+                        fontSize: 18
                     },
                     gridLines: {
                         display: false
                     }
                 }]
+            },
+            legend: {
+                display: false
+            },
+            tooltips: {
+                callbacks: {
+                    beforeLabel: function(tooltipItem, data) {
+                        return data['files'][tooltipItem['datasetIndex']].split("-")[1];
+                    },
+                    label: function(tooltipItem, data) {
+                        return "File: " + data['files'][tooltipItem['datasetIndex']].split("-")[0];
+                    },
+                    afterLabel: function(tooltipItem, data) {
+                        return "Size: " + data['files'][tooltipItem['datasetIndex']].split("-")[2];
+                    }
+                },
+                backgroundColor: 'rgba(240,248,255, 0.9)',
+                bodyFontColor: '#586062',
+                bodyFontSize: 14,
+                displayColors: false
             }
+
+
         }
     });
+    $("#chartjs-legend").html(bubble_chart.generateLegend());
 </script>
