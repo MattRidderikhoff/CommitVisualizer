@@ -27,7 +27,7 @@ class FunctionLifespan
     }
 
     public function getPreviousCommit() {
-        return $this->commits[count($this->commits) -2];
+        return $this->commits[count($this->commits) - 2];
     }
 
     public function getCommits() {
@@ -55,8 +55,6 @@ class FunctionLifespan
 
             if (!$same_lines && !$same_range) {
                 $commits[] = $current_commit;
-            } else {
-                $i = 1;
             }
 
             $current_index++;
@@ -78,7 +76,6 @@ class FunctionLifespan
         $new_function_state = clone $function_state;
         $new_function_state->setCommitDate($commit_date);
 
-        // need to include "total_additions" from prev chunks
         foreach ($chunks as $chunk) {
             $new_function_state = $this->updateFunctionByChunk($new_function_state, $chunk);
         }
@@ -86,7 +83,8 @@ class FunctionLifespan
         $this->commits[] = $new_function_state;
      }
 
-    private function updateFunctionByChunk(FunctionState $function_state, $chunk) {
+    private function updateFunctionByChunk(FunctionState $function_state, $chunk)
+    {
 
         $chunk_line_offset = 0;
         $current_line_index = 0;
@@ -97,12 +95,7 @@ class FunctionLifespan
 
             if ($this->isChunkLineInFunction($function_state, $chunk_line_num)) {
 
-                // if line # = function->line_start_num && function->name can be found in the line AFTER this continuous additions... then append those nums to the range
-                if ($chunk_line_num == $function_state->getStartLineNum() && $this->nextNonAdditionLineNumContainFunctionName($function_state, $chunk, $current_line_index)) {
-                    $i = 1;
-                }
-
-                switch($this->getChunkLineType($chunk_line)) {
+                switch ($this->getChunkLineType($chunk_line)) {
                     case '+':
                         $function_state->addLine($chunk_line_num, $this->removeChunkLineType($chunk_line));
                         break;
@@ -128,26 +121,6 @@ class FunctionLifespan
         }
 
         return $function_state;
-    }
-
-    private function nextNonAdditionLineNumContainFunctionName(FunctionState $new_function_state, $chunk, $current_index) {
-        $current_line = $chunk['lines'][$current_index];
-
-        if ($this->getChunkLineType($current_line) != '+') {
-            return false;
-        }
-
-        $type = $this->getChunkLineType($current_line);
-        $function_name = $new_function_state->getName();
-
-        while ($this->getChunkLineType($current_line) == '+') {
-            $current_index++;
-            $current_line = $chunk['lines'][$current_index];
-        }
-
-        $a = 1;
-
-        return false;
     }
 
     private function calculateRangeChange($chunk_line) {

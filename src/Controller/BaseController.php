@@ -44,8 +44,6 @@ class BaseController extends AbstractController
         $files = $this->repo->getFiles();
         $dates = $this->repo->getCommitDates();
 
-        // TODO: only consider a function to have been "Changed" if something changed between commits
-        //      this is because the file may be changed in a commit, but not that specific function
         return $this->render('home.html.twig',
             ['files' => $files,
                 'colours' => $colour_service->generateColors($this->repo->getFiles()),
@@ -75,7 +73,6 @@ class BaseController extends AbstractController
             $this->parseCommit($commit);
         }
 
-
         // now look remove commits from functions, where the function wasn't impacted itself
         $this->removeUnnecessaryCommits();
     }
@@ -88,7 +85,6 @@ class BaseController extends AbstractController
 
     private function parseCommit($commit_all)
     {
-//        $commit = $commit_all['commit'];
         $commit_info = $commit_all['commit_info'];
         $commit_date_raw = $commit_all['commit_info']['commit']['committer']['date'];
         $commit_date = new \DateTime($commit_date_raw);
@@ -106,9 +102,6 @@ class BaseController extends AbstractController
 
                         if (!$this->repo->hasFile($file_name)) {
 
-                            if ($file_name == 'src/Entities/Chart.php') { // temp testing function
-                                $i = 1;
-                            }
                             $file_lifespan = new FileLifespan($file, $commit_date);
                             $this->repo->addFile($file_lifespan);
                         }
