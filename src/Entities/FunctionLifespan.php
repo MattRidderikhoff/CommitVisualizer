@@ -39,6 +39,40 @@ class FunctionLifespan
         $this->commits[] = $new_function_state;
     }
 
+    public function removeUnnecessaryCommits() {
+        $commits = [];
+
+        $current_commit = $this->commits[0];
+        $commits[] = $current_commit;
+        $current_index = 1;
+
+        while ($current_index < count($this->commits)) {
+            $prev_commit = $current_commit;
+            $current_commit = $this->commits[$current_index];
+
+            $same_lines = $this->sameLines($prev_commit, $current_commit);
+            $same_range = $this->sameRange($prev_commit, $current_commit);
+
+            if (!$same_lines && !$same_range) {
+                $commits[] = $current_commit;
+            } else {
+                $i = 1;
+            }
+
+            $current_index++;
+        }
+
+        $this->commits = $commits;
+    }
+
+    private function sameLines(FunctionState $prev_commit, FunctionState $current_commit) {
+        return $prev_commit->getLines() == $current_commit->getLines();
+    }
+
+    private function sameRange(FunctionState $prev_commit, FunctionState $current_commit) {
+        return $prev_commit->getRange() == $current_commit->getRange();
+    }
+
     public function updateFunctionState(FunctionState $function_state, $commit_date, $chunks) {
 
         $new_function_state = clone $function_state;

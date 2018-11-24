@@ -75,7 +75,15 @@ class BaseController extends AbstractController
             $this->parseCommit($commit);
         }
 
-        $i = 'i'; // temp for testing
+
+        // now look remove commits from functions, where the function wasn't impacted itself
+        $this->removeUnnecessaryCommits();
+    }
+
+    private function removeUnnecessaryCommits() {
+        foreach ($this->repo->getFiles() as $file) {
+            $file->removeUnnecessaryCommits();
+        }
     }
 
     private function parseCommit($commit_all)

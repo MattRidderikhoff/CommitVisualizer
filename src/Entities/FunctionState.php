@@ -49,6 +49,10 @@ class FunctionState
         $this->end_line_num += $range_change;
     }
 
+    public function getRange() {
+        return ['start' => $this->getStartLineNum(), 'end' => $this->getEndLineNum()];
+    }
+
     public function setCommitDate($commit_date) {
         $this->commit_date = $commit_date;
     }

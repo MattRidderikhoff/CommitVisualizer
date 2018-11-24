@@ -28,7 +28,6 @@ class FileLifespan
         }
     }
 
-    // TODO: update file_size
     public function modify($file, $commit_date) {
         $lines = explode("\n", $file['patch']);
 
@@ -79,7 +78,7 @@ class FileLifespan
             $i = 1;
         }
         if($this->file_name == 'src/Controller/BaseController.php' &&
-            count($this->functions[0]->getCommits()) >= 9) {
+            count($this->functions[0]->getCommits()) >= 13) {
             $i = 1;
         }
 
@@ -114,6 +113,12 @@ class FileLifespan
 
 
         $i = 1;
+    }
+
+    public function removeUnnecessaryCommits() {
+        foreach ($this->functions as $function) {
+            $function->removeUnnecessaryCommits();
+        }
     }
 
     private function refactoringUpdate(FunctionState $function_state, $commit_date) {
