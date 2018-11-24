@@ -2,8 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="46c7e365-4477-4765-911c-12b31b6684a2" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Controller/BaseController.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Controller/BaseController.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/bubble_chart.html.twig" beforeDir="false" afterPath="$PROJECT_DIR$/templates/bubble_chart.html.twig" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -44,7 +42,7 @@
           <entry key="css" value="124" />
           <entry key="html" value="9" />
           <entry key="php" value="1499" />
-          <entry key="twig" value="2475" />
+          <entry key="twig" value="2500" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
@@ -52,17 +50,17 @@
           <entry key="CSS" value="124" />
           <entry key="HTML" value="9" />
           <entry key="PHP" value="1499" />
-          <entry key="Twig" value="2475" />
+          <entry key="Twig" value="2500" />
         </counts>
       </usages-collector>
     </session>
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/Controller/BaseController.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="117">
+            <state relative-caret-position="-783">
               <caret line="43" column="47" selection-start-line="43" selection-start-column="47" selection-end-line="43" selection-end-column="47" />
               <folding>
                 <element signature="e#132#163#0#PHP" expanded="true" />
@@ -80,11 +78,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/templates/bubble_chart.html.twig">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1309">
-              <caret line="77" column="32" selection-start-line="77" selection-start-column="32" selection-end-line="77" selection-end-column="32" />
+            <state relative-caret-position="104">
+              <caret line="95" column="93" selection-start-line="95" selection-start-column="93" selection-end-line="95" selection-end-column="93" />
             </state>
           </provider>
         </entry>
@@ -164,8 +162,8 @@
         <option value="$PROJECT_DIR$/src/Entities/RepoOverview.php" />
         <option value="$PROJECT_DIR$/templates/example.html" />
         <option value="$PROJECT_DIR$/public/css/home.css" />
-        <option value="$PROJECT_DIR$/templates/bubble_chart.html.twig" />
         <option value="$PROJECT_DIR$/src/Controller/BaseController.php" />
+        <option value="$PROJECT_DIR$/templates/bubble_chart.html.twig" />
       </list>
     </option>
   </component>
@@ -313,12 +311,12 @@
       <workItem from="1542097460340" duration="1539000" />
       <workItem from="1542308406024" duration="1220000" />
       <workItem from="1542592367543" duration="6203000" />
-      <workItem from="1542926800482" duration="35270000" />
+      <workItem from="1542926800482" duration="35517000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="44232000" />
+    <option name="totallyTimeSpent" value="44479000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -333,7 +331,7 @@
     <frame x="0" y="23" width="1280" height="723" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.25040388" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.25040388" />
       <window_info id="Structure" order="1" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Database Changes" show_stripe_button="false" />
@@ -347,7 +345,7 @@
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32894737" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Version Control" order="8" weight="0.32894737" />
-      <window_info anchor="bottom" id="Terminal" order="9" visible="true" weight="0.29769737" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="9" visible="true" weight="0.29769737" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -543,20 +541,20 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/templates/bubble_chart.html.twig">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1309">
-          <caret line="77" column="32" selection-start-line="77" selection-start-column="32" selection-end-line="77" selection-end-column="32" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/Controller/BaseController.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="117">
+        <state relative-caret-position="-783">
           <caret line="43" column="47" selection-start-line="43" selection-start-column="47" selection-end-line="43" selection-end-column="47" />
           <folding>
             <element signature="e#132#163#0#PHP" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/bubble_chart.html.twig">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="104">
+          <caret line="95" column="93" selection-start-line="95" selection-start-column="93" selection-end-line="95" selection-end-column="93" />
         </state>
       </provider>
     </entry>

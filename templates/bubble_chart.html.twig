@@ -93,13 +93,13 @@
             tooltips: {
                 callbacks: {
                     beforeLabel: function(tooltipItem, data) {
-                        return data['files'][tooltipItem['datasetIndex']].split("-")[1];
+                        return data['files'][tooltipItem['datasetIndex']].split("-")[1] + "( )";
                     },
                     label: function(tooltipItem, data) {
-                        return "File: " + data['files'][tooltipItem['datasetIndex']].split("-")[0];
+                        return "Parent file: " + data['files'][tooltipItem['datasetIndex']].split("-")[0];
                     },
                     afterLabel: function(tooltipItem, data) {
-                        return "Size: " + data['files'][tooltipItem['datasetIndex']].split("-")[2];
+                        return "# of lines: " + data['files'][tooltipItem['datasetIndex']].split("-")[2];
                     }
                 },
                 backgroundColor: 'rgba(240,248,255, 0.9)',
