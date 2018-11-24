@@ -54,4 +54,16 @@ class RepoOverview
     asort($datesUnique);
     return $datesUnique;
   }
+
+  public function getFunctionNames() {
+    $functions = [];
+    foreach ($this->files as $file) {
+      foreach ($file->getFunctions() as $func) {
+        $fileName = explode('/', $file->getName());
+        $name = $fileName[count($fileName)-1] . '/' . $func->getCurrentName();
+        array_push($functions, $name);
+      }
+    }
+    return $functions;
+  }
 }
