@@ -24,7 +24,20 @@
 }
 
 .chart {
-    width: 100%;
+    width: 95%;
     height: 80%;
     display: inline-block;
+}
+
+#chart-legends sub {
+    font: 11px Verdana;
+    margin-right: 25px;
+}
+
+#chart-legends span {
+    width: 30px;
+    height: 12px;
+    display: inline-block;
+    margin: 10px 5px 8px 0;
+    vertical-align: -9.4px;
 }

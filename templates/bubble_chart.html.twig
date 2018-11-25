@@ -48,7 +48,7 @@
                     scaleLabel: {
                         display: true,
                         labelString: "Functions",
-                        fontSize: 15
+                        fontSize: 18
 
                     },
 
@@ -75,7 +75,7 @@
                     time: {
                         format: timeFormat,
                         unit: 'day',
-                        max: moment("2018-10-18").format(timeFormat)
+                        // max: moment("2018-10-18").format(timeFormat)
                     },
                     scaleLabel: {
                         display: true,
@@ -99,13 +99,44 @@
                         return "Parent file: " + data['files'][tooltipItem['datasetIndex']].split("-")[0];
                     },
                     afterLabel: function(tooltipItem, data) {
-                        return "# of lines: " + data['files'][tooltipItem['datasetIndex']].split("-")[2];
+                        var lines = data['files'][tooltipItem['datasetIndex']].split("-")[2];
+                        if (lines === '0') {
+                            return "DELETED"
+                        } else {
+                            return "# of lines: " + data['files'][tooltipItem['datasetIndex']].split("-")[2];
+                        }
                     }
                 },
                 backgroundColor: 'rgba(240,248,255, 0.9)',
                 bodyFontColor: '#586062',
                 bodyFontSize: 14,
                 displayColors: false
+            },
+            legendCallback: function(chart) {
+                var backgroundColours = [
+                    {% for file in files %}
+                    "{{ colours[file.getName()][0] }}",
+                    {% endfor %}
+                ];
+
+                var borderColours = [
+                    {% for file in files %}
+                    "{{ colours[file.getName()][1] }}",
+                    {% endfor %}
+                ];
+
+                var files = [
+                    {% for file in files %}
+                    "{{ file.getName() }}",
+                    {% endfor %}
+                ];
+
+                var text = [];
+                for (var i=0; i<files.length; i++) {
+                    text.push('<span style="background-color: '+backgroundColours[i]+'; border: 2px solid '+ borderColours[i] +';"></span>');
+                    text.push('<sub>' + files[i] + '</sub>');
+                }
+                return text.join("");
             }
 
 
