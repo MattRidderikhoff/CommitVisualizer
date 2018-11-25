@@ -16,7 +16,7 @@ class ColourService
         $usedColours = [];
         foreach ($files as $file) {
             $colour = $this->getNewColour($usedColours);
-            $backgroundColour = $this->hexTorgba($colour, 0.3);
+            $backgroundColour = $this->hexTorgba($colour, 0.4);
             $borderColour = $this->hexTorgba($colour);
             $file_name = $file->getName();
             $colours[$file_name] = [$backgroundColour, $borderColour];

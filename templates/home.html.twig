@@ -62,6 +62,12 @@
     <div class="chart">
         {% include 'bubble_chart.html.twig' %}
     </div>
+    <div id="chart-legends"></div>
+    <script>
+        document.getElementById('chart-legends').innerHTML = bubble_chart.generateLegend();
+    </script>
+
+
 
 {% endblock %}
 </body>

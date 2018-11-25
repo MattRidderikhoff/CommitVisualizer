@@ -82,6 +82,9 @@ class FunctionState
     }
 
     public function getSize() {
+      if ($this->end_line_num - $this->start_line_num < 0) {
+        return 0;
+      }
       return $this->end_line_num - $this->start_line_num;
     }
 }
