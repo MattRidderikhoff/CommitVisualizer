@@ -11,49 +11,48 @@
 {% block body %}
 
     <div>
-        <h2>Function Lifespan Visualization</h2>
+        <h2 class="heading">Function Lifespan Visualization</h2>
     </div>
 
-    <div class="filter">
-        <div class="filter-left">
-             <form id="filter_by_file" action="/">
-                <p>View function lifespan for files:</p>
+    <div class="filter-container">
+        <form id="filters" action="/">
+            <div class="filter">
+                <div class="filter-left">
+                    <p>View function lifespan for files:</p>
                     <select multiple class="form-control" id="files" name="files[]">
                         {% for file in files %}
                             <option value="{{file.getName()}}">{{file.getName()}}</option>
                         {% endfor %}
                     </select>
-                <button>Filter by Files</button>
-            </form>
-        </div>
+                </div>
 
-        <div class="filter-centre">
+
+                <div class="filter-right">
+                    <p>View function lifespan between dates:</p>
+                    <div class="filter-date-from">
+                        From: <br>
+                        <select class="form-control" id="start-date" name="start_date">
+                            {% for date in dates %}
+                                <option value="{{date}}">{{date}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="filter-date-to">
+                        To: <br>
+                        <select class="form-control" id="end-date" name="end_date">
+                            {% for date in dates %}
+                                <option value="{{date}}">{{date}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button>Apply Filters</button>
+                </div>
+            </div>
+        </form>
+
+        <div class="reset-container">
             <form id="reset-filters" action="/">
-               <button class="reset-button">Reset</button>
-            </form>
-        </div>
-
-        <div class="filter-right">
-            <form id="filter_by_date">
-                <p>View function lifespan between dates:</p>
-                <div class="filter-date-from">
-                    From: <br>
-                    <select class="form-control" id="start-date" name="start_date">
-                        {% for date in dates %}
-                            <option value="{{date}}">{{date}}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="filter-date-to">
-                    To: <br>
-                    <select class="form-control" id="end-date" name="end_date">
-                        {% for date in dates %}
-                            <option value="{{date}}">{{date}}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <button>Filter by Dates</button>
-
+               <button class="reset-button">Reset Filters</button>
             </form>
         </div>
     </div>
