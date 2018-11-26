@@ -61,13 +61,14 @@ class BaseController extends AbstractController
         if (is_null($endDate)) {
             $endDate = end($dates);
         }
+        $functionNames = $this->repo->getFunctionNames();
 
         return $this->render('home.html.twig',
-            ['files' => $files,
+            [ 'files' => $files,
               'colours' => $colour_service->generateColors($this->repo->getFiles()),
               'dates' => $dates,
               'endDate' => $endDate,
-              'functions' => $this->repo->getFunctionNames(),
+              'functions' => $functionNames,
               'filteredFiles' => $filteredFiles,
               'startDate' => $startDate
             ]);
