@@ -43,12 +43,13 @@ class BaseController extends AbstractController
 
         $files = $this->repo->getFiles();
         $dates = $this->repo->getCommitDates();
+        $functionNames = $this->repo->getFunctionNames();
 
         return $this->render('home.html.twig',
-            ['files' => $files,
+            [ 'files' => $files,
               'colours' => $colour_service->generateColors($this->repo->getFiles()),
               'dates' => $dates,
-              'functions' => $this->repo->getFunctionNames()
+              'functions' => $functionNames
             ]);
     }
 
