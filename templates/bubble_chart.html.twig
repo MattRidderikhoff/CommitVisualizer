@@ -1,4 +1,6 @@
 {% set yCount = 1 %}
+{% set CHART_BASE_HEIGHT = 40 %}
+{% set CHART_LINE_HEIGHT = 7 %}
 {% set functionCount = 0 %}
 {% for file in filteredFiles %}
     {% for func in file.getFunctions() %}
@@ -6,7 +8,7 @@
     {% endfor %}
 {% endfor %}
 
-<canvas id="bubble_chart" height="{{ 40 + 7 * functionCount }}" width ="300"></canvas>
+<canvas id="bubble_chart" height="{{ CHART_BASE_HEIGHT + CHART_LINE_HEIGHT * functionCount }}" width ="300"></canvas>
 <script>
     var timeFormat = 'YYYY-MM-DD h:mm a';
     var bubble_chart = new Chart(document.getElementById("bubble_chart"), {
