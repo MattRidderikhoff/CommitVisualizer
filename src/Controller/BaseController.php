@@ -13,7 +13,9 @@ use App\Entities\FileLifespan;
 use App\Entities\RepoOverview;
 use App\Services\APIService;
 use App\Services\ColourService;
+use App\Services\FormHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Serializer\SerializerInterface;
 
 class BaseController extends AbstractController
@@ -30,8 +32,10 @@ class BaseController extends AbstractController
     const GITHUB_API_URI = 'https://api.github.com/';
     const OUR_PROJECT_URI = 'repos/MattRidderikhoff/DashboardGenerator/';
 
-    public function renderHome(APIService $api_service, ColourService $colour_service, SerializerInterface $serializer)
+    public function renderHome(APIService $api_service, ColourService $colour_service, Request $request, FormHandler $form_handler, SerializerInterface $serializer)
     {
+        $form_handler->handleHomeRequest($request);
+
         $this->serializer = $serializer;
         $this->api_service = $api_service;
 
@@ -42,14 +46,31 @@ class BaseController extends AbstractController
         $this->generateCommitHistory();
 
         $files = $this->repo->getFiles();
+        $filteredFiles = $this->repo->getFilteredFiles($form_handler->getFiles());
+        if (empty($filteredFiles)) {
+            $filteredFiles = $files;
+        }
+
         $dates = $this->repo->getCommitDates();
+        $startDate = $form_handler->getStartDate();
+        if (is_null($startDate)) {
+            $startDate = current($dates);
+        }
+
+        $endDate = $form_handler->getEndDate();
+        if (is_null($endDate)) {
+            $endDate = end($dates);
+        }
         $functionNames = $this->repo->getFunctionNames();
 
         return $this->render('home.html.twig',
             [ 'files' => $files,
               'colours' => $colour_service->generateColors($this->repo->getFiles()),
               'dates' => $dates,
-              'functions' => $functionNames
+              'endDate' => $endDate,
+              'functions' => $functionNames,
+              'filteredFiles' => $filteredFiles,
+              'startDate' => $startDate
             ]);
     }
 

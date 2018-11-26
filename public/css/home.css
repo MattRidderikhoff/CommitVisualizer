@@ -1,16 +1,27 @@
+.heading {
+    margin-left: 100px;
+}
+
 .filter {
-    display: inline-flex;
-    width: 100%;
+    display: flex;
+    padding-left: 100px;
 }
 
 .filter-left {
-    width: 40%;
     display: inline-block;
+    height: 120px;
+    margin-right: 24px;
 }
 
 .filter-right {
-    width: 60%;
+    width: 320px;
     display: inline-block;
+    align-items: flex-start;
+    height: 120px;
+}
+
+.filter-container {
+    display: flex;
 }
 
 .filter-date-from {
@@ -40,4 +51,8 @@
     display: inline-block;
     margin: 10px 5px 8px 0;
     vertical-align: -9.4px;
+}
+
+.reset-container {
+    margin-top: 68px;
 }

@@ -36,6 +36,18 @@ class RepoOverview
     return $this->files;
   }
 
+  public function getFilteredFiles($selectedFiles) {
+    $filteredFiles = [];
+    foreach ($selectedFiles as $selectedFile) {
+      foreach ($this->files as $file) {
+        if ($file->getName() == $selectedFile) {
+          array_push($filteredFiles, $file);
+        }
+      }
+    }
+    return $filteredFiles;
+  }
+
   public function getCommitDates(): array
   {
     $dates = [];

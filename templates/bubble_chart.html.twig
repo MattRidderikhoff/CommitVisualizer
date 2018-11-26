@@ -1,40 +1,60 @@
 {% set yCount = 1 %}
+{% set CHART_BASE_HEIGHT = 40 %}
+{% set CHART_LINE_HEIGHT = 7 %}
+{% set functionCount = 0 %}
+{% for file in filteredFiles %}
+    {% for func in file.getFunctions() %}
+        {% set functionCount = functionCount + 1 %}
+    {% endfor %}
+{% endfor %}
 
-<canvas id="bubble_chart" height="300" width ="300"></canvas>
+<canvas id="bubble_chart" height="{{ CHART_BASE_HEIGHT + CHART_LINE_HEIGHT * functionCount }}" width ="300"></canvas>
 <script>
     var timeFormat = 'YYYY-MM-DD h:mm a';
     var bubble_chart = new Chart(document.getElementById("bubble_chart"), {
         type: 'bubble',
         data: {
-            datasets: [
-                {% for file in files %}
+            files: [
+                {% for file in filteredFiles %}
                     {% for func in file.getFunctions() %}
                         {% for commit in func.getCommits() %}
-                            {
-                                label: "{{ func.getCurrentName() }}",
-                                data:
-                                    [{
-                                            x: moment("{{ commit.getCommitDate().format('Y-m-d h') }}").format(timeFormat),
-                                            y: {{ yCount }},
+                            "{{ file.getName() }}-{{ func.getCurrentName()}}-{{ commit.getSize() }}",
+                        {% endfor %}
+                    {% endfor %}
+                {% endfor %}
+            ],
+            datasets: [
+                {% for file in filteredFiles %}
+                    {% for func in file.getFunctions() %}
+                        {% for commit in func.getCommits() %}
+                            {% if commit.getCommitDate()|date("Y-m-d") >= startDate|date("Y-m-d")
+                            and commit.getCommitDate()|date("Y-m-d") <= endDate|date("Y-m-d") %}
+                                {
+                                    label: "{{ func.getCurrentName() }}",
+                                    data:
+                                        [{
+                                                x: moment("{{ commit.getCommitDate().format('Y-m-d h') }}").format(timeFormat),
+                                                y: {{ yCount }},
 
-                                            {% if commit.getSize() > 100 %}
-                                                r: 1 + {{ commit.getSize() }}*0.07,
-                                            {% else %}
-                                                r: 3 + {{ commit.getSize() }}*0.08
-                                            {% endif %}
-                                    }],
-                                fill:false,
-                                borderColor:"{{ colours[file.getName()][1] }}",
-                                backgroundColor:"{{ colours[file.getName()][0] }}",
-                                body:
-                                    [
-                                        {% for line in commit.getLines() %}
-                                            "{{ line }}",
-                                        {% endfor %}
-                                    ],
-                                size: "{{ commit.getSize() }}",
-                                fileName: "{{ file.getName() }}"
-                            },
+                                                {% if commit.getSize() > 100 %}
+                                                    r: 1 + {{ commit.getSize() }}*0.07,
+                                                {% else %}
+                                                    r: 3 + {{ commit.getSize() }}*0.08
+                                                {% endif %}
+                                        }],
+                                    fill:false,
+                                    borderColor:"{{ colours[file.getName()][1] }}",
+                                    backgroundColor:"{{ colours[file.getName()][0] }}",
+                                    body:
+                                        [
+                                            {% for line in commit.getLines() %}
+                                                "{{ line }}",
+                                            {% endfor %}
+                                        ],
+                                    size: "{{ commit.getSize() }}",
+                                    fileName: "{{ file.getName() }}"
+                                },
+                            {% endif %}
                         {% endfor %}
                     {% set yCount = yCount + 1 %}
                     {% endfor %}
@@ -80,7 +100,6 @@
                     time: {
                         format: timeFormat,
                         unit: 'day',
-                        // max: moment("2018-10-18").format(timeFormat)
                     },
                     scaleLabel: {
                         display: true,
