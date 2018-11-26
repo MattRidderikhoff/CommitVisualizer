@@ -6,15 +6,6 @@
     var bubble_chart = new Chart(document.getElementById("bubble_chart"), {
         type: 'bubble',
         data: {
-            files: [
-                {% for file in files %}
-                    {% for func in file.getFunctions() %}
-                        {% for commit in func.getCommits() %}
-                            "{{ file.getName() }}-{{ func.getCurrentName()}}-{{ commit.getSize() }}",
-                        {% endfor %}
-                    {% endfor %}
-                {% endfor %}
-            ],
             datasets: [
                 {% for file in files %}
                     {% for func in file.getFunctions() %}
@@ -25,11 +16,24 @@
                                     [{
                                             x: moment("{{ commit.getCommitDate().format('Y-m-d h') }}").format(timeFormat),
                                             y: {{ yCount }},
-                                            r: 3 + {{ commit.getSize() }}*0.05
+
+                                            {% if commit.getSize() > 100 %}
+                                                r: 1 + {{ commit.getSize() }}*0.07,
+                                            {% else %}
+                                                r: 3 + {{ commit.getSize() }}*0.08
+                                            {% endif %}
                                     }],
                                 fill:false,
                                 borderColor:"{{ colours[file.getName()][1] }}",
-                                backgroundColor:"{{ colours[file.getName()][0] }}"
+                                backgroundColor:"{{ colours[file.getName()][0] }}",
+                                body:
+                                    [
+                                        {% for line in commit.getLines() %}
+                                            "{{ line }}",
+                                        {% endfor %}
+                                    ],
+                                size: "{{ commit.getSize() }}",
+                                fileName: "{{ file.getName() }}"
                             },
                         {% endfor %}
                     {% set yCount = yCount + 1 %}
@@ -40,7 +44,8 @@
         options: {
             title: {
                 display: true,
-                text: "Function Lifespan"
+                text: "Function Lifespan",
+                fontSize: 22
             },
             scales: {
                 yAxes: [
@@ -93,17 +98,28 @@
             tooltips: {
                 callbacks: {
                     beforeLabel: function(tooltipItem, data) {
-                        return data['files'][tooltipItem['datasetIndex']].split("-")[1] + "( )";
+                        return data.datasets[tooltipItem.datasetIndex].label + "( )";
                     },
                     label: function(tooltipItem, data) {
-                        return "Parent file: " + data['files'][tooltipItem['datasetIndex']].split("-")[0];
+                        return "Parent file: " + data.datasets[tooltipItem.datasetIndex].fileName;
                     },
                     afterLabel: function(tooltipItem, data) {
-                        var lines = data['files'][tooltipItem['datasetIndex']].split("-")[2];
+                        var lines = data.datasets[tooltipItem.datasetIndex].size;
                         if (lines === '0') {
                             return "DELETED"
                         } else {
-                            return "# of lines: " + data['files'][tooltipItem['datasetIndex']].split("-")[2];
+                            var label = [];
+                            label.push("# of lines: " + lines);
+                            label.push("");
+                            label.push("Function snippet:");
+                            var body = data.datasets[tooltipItem.datasetIndex].body;
+                            body.forEach(function(line) {
+                                var textArea = document.createElement('textarea');
+                                textArea.innerHTML = line;
+                                label.push(textArea.value);
+                            });
+                            return label;
+
                         }
                     }
                 },
