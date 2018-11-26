@@ -4,13 +4,21 @@
 }
 
 .filter-left {
-    width: 40%;
+    width: 400px;
     display: inline-block;
+    height: 120px;
+}
+
+.filter-centre {
+    width: 100px;
+    display: inline-block;
+    height: 120px;
 }
 
 .filter-right {
-    width: 60%;
+    width: 600px;
     display: inline-block;
+    height: 120px;
 }
 
 .filter-date-from {
@@ -40,4 +48,14 @@
     display: inline-block;
     margin: 10px 5px 8px 0;
     vertical-align: -9.4px;
+}
+
+.reset-button {
+    position: absolute;
+    bottom: 0;
+}
+
+#reset-filters {
+    height: 100%;
+    position: relative;
 }

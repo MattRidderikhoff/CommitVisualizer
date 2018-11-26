@@ -7,7 +7,7 @@
         type: 'bubble',
         data: {
             files: [
-                {% for file in files %}
+                {% for file in filteredFiles %}
                     {% for func in file.getFunctions() %}
                         {% for commit in func.getCommits() %}
                             "{{ file.getName() }}-{{ func.getCurrentName()}}-{{ commit.getSize() }}",
@@ -16,7 +16,7 @@
                 {% endfor %}
             ],
             datasets: [
-                {% for file in files %}
+                {% for file in filteredFiles %}
                     {% for func in file.getFunctions() %}
                         {% for commit in func.getCommits() %}
                             {
@@ -75,7 +75,8 @@
                     time: {
                         format: timeFormat,
                         unit: 'day',
-                        // max: moment("2018-10-18").format(timeFormat)
+                        max: moment("{{endDate}}").format(timeFormat),
+                        min: moment("{{startDate}}").format(timeFormat),
                     },
                     scaleLabel: {
                         display: true,
